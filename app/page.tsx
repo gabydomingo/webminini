@@ -133,7 +133,7 @@ export default async function HomePage() {
         <section className="relative min-h-[88vh] flex flex-col">
           <div className="absolute inset-0">
             <Image
-              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/sign/FotosPagina/heroprueba.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8xMzYyYTZhZi0zYTkwLTQ4MWYtYjZjMi1jMThjNzYwZjY5NzQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJGb3Rvc1BhZ2luYS9oZXJvcHJ1ZWJhLnBuZyIsImlhdCI6MTc3NTE5MjQwNCwiZXhwIjoxNzc1Nzk3MjA0fQ.fYhy_xPU7MFuJdLRS_0hhhtFad8jjCdjuJKkT3XVrho"
+              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
               alt="Hero"
               fill
               priority
