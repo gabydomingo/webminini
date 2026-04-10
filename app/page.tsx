@@ -1,65 +1,226 @@
 import Image from "next/image";
+import Link from "next/link";
+import { supabase } from "./lib/supabase";
+import SearchBar from "./components/SearchBar";
+import Header from "./components/Header";
+import SocialSection from "./components/SocialSection"
 
-export default function Home() {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Property {
+  id: string;
+  title: string;
+  description: string;
+  price: number | null;
+  currency: string;
+  operation_type: string;
+  property_type: string;
+  location: string;
+  bedrooms: number;
+  bathrooms: number;
+  environments: number;
+  features: string[];
+  status: string;
+  images: string[];
+  created_at: string;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function formatPrice(price: number | null, currency: string) {
+  if (!price) return "Consultar valor";
+  const symbol = currency === "USD" ? "U$S" : "$";
+  return `${symbol} ${price.toLocaleString("es-AR")}`;
+}
+
+function getStatusColor(op: string) {
+  return op?.toLowerCase() === "alquiler"
+    ? "bg-[#1a6b3c] text-white"
+    : "bg-[#8B1A1A] text-white";
+}
+
+// ─── PropertyCard Component ───────────────────────────────────────────────────
+function PropertyCard({ property }: { property: Property }) {
+  const img = property.images?.[0] ?? null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    <Link href={`/propiedades/${property.id}`} className="group block">
+      <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
+        <div className="relative h-52 overflow-hidden">
+          {img ? (
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src={img}
+              alt={property.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ) : (
+            <div className="w-full h-full bg-[#e8e0d4] flex items-center justify-center">
+              <svg className="w-12 h-12 text-[#b0a090]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
+              </svg>
+            </div>
+          )}
+
+          <span className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${getStatusColor(property.operation_type)}`}>
+            {property.operation_type}
+          </span>
+
+          <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-sm font-bold px-3 py-1.5 rounded-lg">
+            {formatPrice(property.price, property.currency)}
+          </div>
         </div>
+
+        <div className="p-4">
+          <h3 className="font-bold text-[#2a1f1a] text-base leading-snug mb-1 group-hover:text-[#8B1A1A] transition-colors line-clamp-2" style={{ fontFamily: "'Georgia', serif" }}>
+            {property.title}
+          </h3>
+          <p className="text-xs text-[#8b7b6e] flex items-center gap-1 mb-3">
+            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+            </svg>
+            {property.location || 'Ubicación a consultar'}
+          </p>
+
+          <div className="flex items-center gap-4 text-xs text-[#6b5a4e] border-t border-[#f0ebe0] pt-3">
+            {property.bedrooms > 0 && (
+              <span className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 9V19M21 9V19M3 13H21M5 9V7a2 2 0 012-2h10a2 2 0 012 2v2" />
+                </svg>
+                {property.bedrooms}
+              </span>
+            )}
+            {property.bathrooms > 0 && (
+              <span className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 12h16M4 12V8a4 4 0 018 0M4 12v6h16v-6" />
+                </svg>
+                {property.bathrooms}
+              </span>
+            )}
+            {property.environments > 0 && (
+              <span className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 3h18v18H3z" />
+                </svg>
+                {property.environments} amb.
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ─── Main Page Component (SSR) ────────────────────────────────────────────────
+export default async function HomePage() {
+  // Traemos los datos directamente desde el servidor. Cero hooks.
+  const { data } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("status", "disponible") // <- Corrección vital para que coincida con la base de datos
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  const properties = data || [];
+
+  return (
+    <>
+      <Header />
+
+      <main>
+        {/* ── HERO ─────────────────────────────────────────────────────────── */}
+        <section className="relative min-h-[88vh] flex flex-col">
+          <div className="absolute inset-0">
+            <Image
+              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/sign/FotosPagina/heroprueba.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8xMzYyYTZhZi0zYTkwLTQ4MWYtYjZjMi1jMThjNzYwZjY5NzQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJGb3Rvc1BhZ2luYS9oZXJvcHJ1ZWJhLnBuZyIsImlhdCI6MTc3NTE5MjQwNCwiZXhwIjoxNzc1Nzk3MjA0fQ.fYhy_xPU7MFuJdLRS_0hhhtFad8jjCdjuJKkT3XVrho"
+              alt="Hero"
+              fill
+              priority
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          </div>
+
+          <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center px-6 lg:px-16 pt-10 pb-32 max-w-7xl mx-auto w-full">
+            {/* <p className="text-[#f5c0b0] text-xs font-semibold uppercase tracking-[0.3em] mb-4">
+              Inmobiliaria Minini
+            </p> */}
+            <h1
+              className="text-white text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-2xl mx-auto"
+              style={{ fontFamily: "'Georgia', serif" }}
+            >
+              Lo que buscas,
+              <br />
+              <span className="text-[#f5c0b0]">lo tenemos.</span>
+            </h1>
+            <p className="text-white/70 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+              Encontrá tu próxima propiedad con la experiencia y confianza de años en el mercado inmobiliario.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="/propiedades"
+                className="px-7 py-3.5 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold text-sm tracking-widest uppercase rounded-sm transition-all duration-200 shadow-lg active:scale-95"
+                style={{ fontFamily: "'Georgia', serif" }}
+              >
+                Ver propiedades
+              </Link>
+              <Link
+                href="/contacto"
+                className="px-7 py-3.5 border-2 border-white/60 hover:border-white text-white font-semibold text-sm tracking-widest uppercase rounded-sm transition-all duration-200 backdrop-blur-sm hover:bg-white/10"
+                style={{ fontFamily: "'Georgia', serif" }}
+              >
+                Ponte en contacto
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative z-10 w-full max-w-5xl mx-auto px-6 lg:px-10 -mb-10">
+            <SearchBar />
+          </div>
+        </section>
+
+        {/* ── FEATURED PROPERTIES ──────────────────────────────────────────── */}
+        <section className="bg-[#faf7f2] pt-24 pb-20 px-6 lg:px-10">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2
+                  className="text-2xl md:text-3xl font-bold text-[#2a1f1a]"
+                  style={{ fontFamily: "'Georgia', serif" }}
+                >
+                  Propiedades destacadas
+                </h2>
+                <div className="mt-2 h-[3px] w-14 bg-[#8B1A1A] rounded-full" />
+              </div>
+              <Link
+                href="/propiedades"
+                className="flex items-center gap-2 text-[#8B1A1A] text-sm font-semibold uppercase tracking-widest hover:gap-3 transition-all duration-200"
+              >
+                Ver más
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
+            {properties.length === 0 ? (
+              <div className="text-center py-20 text-[#8b7b6e]">
+                <p className="text-lg">No hay propiedades disponibles en este momento.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {properties.map((p) => (
+                  <PropertyCard key={p.id} property={p} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+        <SocialSection />
       </main>
-    </div>
+    </>
   );
 }
