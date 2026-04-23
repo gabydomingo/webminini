@@ -3,26 +3,8 @@ import Link from "next/link";
 import { supabase } from "./lib/supabase";
 import SearchBar from "./components/SearchBar";
 import Header from "./components/Header";
-import SocialSection from "./components/SocialSection"
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface Property {
-  id: string;
-  title: string;
-  description: string;
-  price: number | null;
-  currency: string;
-  operation_type: string;
-  property_type: string;
-  location: string;
-  bedrooms: number;
-  bathrooms: number;
-  environments: number;
-  features: string[];
-  status: string;
-  images: string[];
-  created_at: string;
-}
+import SocialSection from "./components/SocialSection";
+import { Property } from "./types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatPrice(price: number | null, currency: string) {
@@ -32,9 +14,10 @@ function formatPrice(price: number | null, currency: string) {
 }
 
 function getStatusColor(op: string) {
-  return op?.toLowerCase() === "alquiler"
-    ? "bg-[#1a6b3c] text-white"
-    : "bg-[#8B1A1A] text-white";
+  const opLower = op?.toLowerCase() || '';
+  if (opLower.includes("alquiler")) return "bg-[#1a6b3c] text-white";
+  if (opLower.includes("pozo")) return "bg-[#1A3B8B] text-white";
+  return "bg-[#8B1A1A] text-white";
 }
 
 // ─── PropertyCard Component ───────────────────────────────────────────────────
@@ -133,7 +116,7 @@ export default async function HomePage() {
         <section className="relative min-h-[88vh] flex flex-col">
           <div className="absolute inset-0">
             <Image
-              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
+              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png" // Me aseguré de que use la url pública limpia
               alt="Hero"
               fill
               priority
@@ -144,9 +127,6 @@ export default async function HomePage() {
           </div>
 
           <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center px-6 lg:px-16 pt-10 pb-32 max-w-7xl mx-auto w-full">
-            {/* <p className="text-[#f5c0b0] text-xs font-semibold uppercase tracking-[0.3em] mb-4">
-              Inmobiliaria Minini
-            </p> */}
             <h1
               className="text-white text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-2xl mx-auto"
               style={{ fontFamily: "'Georgia', serif" }}
@@ -219,6 +199,8 @@ export default async function HomePage() {
             )}
           </div>
         </section>
+
+        {/* ── SOCIAL Y VIDEOS ─────────────────────────────────────────────── */}
         <SocialSection />
       </main>
     </>

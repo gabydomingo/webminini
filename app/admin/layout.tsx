@@ -1,3 +1,4 @@
+// src/app/admin/layout.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -37,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-screen bg-gray-100">
 
-      <aside className="w-64 bg-gray-900 text-white flex flex-col shadow-xl">
+      <aside className="w-64 bg-gray-900 text-white flex flex-col shadow-xl shrink-0">
         <div className="p-6 border-b border-gray-800">
           <h2 className="text-2xl font-bold tracking-tight">Admin<span className="text-red-500">Minini</span></h2>
           <p className="text-xs text-gray-400 mt-1">Backoffice de Gestión</p>
@@ -50,6 +51,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
           >
             📊 Dashboard
+          </Link>
+
+          {/* ── NUEVO ENLACE A CONSULTAS ── */}
+          <Link
+            href="/admin/consultas"
+            className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin/consultas' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+          >
+            💬 Consultas Web
           </Link>
 
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6 px-4">Inmobiliaria</div>
