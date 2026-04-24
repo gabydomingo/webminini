@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { supabase } from "../../lib/supabase"; // Ajustá esta ruta si es diferente
+import { supabase } from "../../lib/supabase";
 import Header from "../../components/Header";
 import { Property } from "../../types";
 import dynamic from 'next/dynamic';
@@ -18,12 +18,15 @@ const MapViewer = dynamic(() => import('../../components/MapViewer'), {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatPrice(price: number | null, currency: string) {
     if (!price) return "Consultar valor";
-    return `${currency} ${price.toLocaleString("es-AR")}`;
+    const symbol = currency === "USD" ? "U$S" : "$";
+    return `${symbol} ${price.toLocaleString("es-AR")}`;
 }
 
 // ─── Mini Tarjeta para Propiedades Similares ─────────────────────────────────
 function MiniPropertyCard({ property }: { property: Property }) {
-    const img = property.images?.[0] ?? null;
+    const imgArray = Array.isArray(property.images) ? property.images : [];
+    const img = imgArray.length > 0 ? imgArray[0] : null;
+
     return (
         <Link href={`/propiedades/${property.id}`} className="group block shrink-0 w-64 md:w-72">
             <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all">
@@ -33,13 +36,13 @@ function MiniPropertyCard({ property }: { property: Property }) {
                     ) : (
                         <div className="w-full h-full bg-gray-200" />
                     )}
-                    <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded">
+                    <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded font-sans">
                         {formatPrice(property.price, property.currency)}
                     </div>
                 </div>
                 <div className="p-3">
-                    <h4 className="font-bold text-gray-900 text-sm line-clamp-1 group-hover:text-[#8B1A1A]">{property.title}</h4>
-                    <p className="text-xs text-gray-500 mt-1">{property.property_type} en {property.operation_type}</p>
+                    <h4 className="font-bold text-foreground text-sm line-clamp-1 group-hover:text-primary transition-colors font-serif">{property.title}</h4>
+                    <p className="text-xs text-foreground/60 mt-1 font-sans">{property.property_type} en {property.operation_type}</p>
                 </div>
             </div>
         </Link>
@@ -62,11 +65,14 @@ export default function PropertyDetailPage() {
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+    // Refs
+    const sideGalleryRef = useRef<HTMLDivElement>(null);
+    const similarCarouselRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         const fetchData = async () => {
             if (!id) return;
 
-            // 1. Buscar la propiedad actual
             const { data: currentProp, error } = await supabase
                 .from('properties')
                 .select('*')
@@ -80,13 +86,12 @@ export default function PropertyDetailPage() {
                     message: `Hola, quiero recibir más información sobre la propiedad "${currentProp.title}" en ${currentProp.localidad}.`
                 }));
 
-                // 2. Buscar propiedades similares en la misma localidad (máximo 4)
                 const { data: similar } = await supabase
                     .from('properties')
                     .select('*')
                     .eq('localidad', currentProp.localidad)
                     .eq('status', 'disponible')
-                    .neq('id', currentProp.id) // Excluimos la actual
+                    .neq('id', currentProp.id)
                     .limit(6);
 
                 if (similar) setSimilarProperties(similar as Property[]);
@@ -96,7 +101,6 @@ export default function PropertyDetailPage() {
         fetchData();
     }, [id]);
 
-    // Bloquear scroll del body cuando el lightbox está abierto
     useEffect(() => {
         if (isLightboxOpen) document.body.style.overflow = 'hidden';
         else document.body.style.overflow = 'unset';
@@ -143,21 +147,37 @@ export default function PropertyDetailPage() {
 
     const nextImage = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setCurrentImageIndex((prev) => (prev === (property?.images?.length || 1) - 1 ? 0 : prev + 1));
+        const totalImages = Array.isArray(property?.images) ? property.images.length : 1;
+        setCurrentImageIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
     };
 
     const prevImage = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setCurrentImageIndex((prev) => (prev === 0 ? (property?.images?.length || 1) - 1 : prev - 1));
+        const totalImages = Array.isArray(property?.images) ? property.images.length : 1;
+        setCurrentImageIndex((prev) => (prev === 0 ? totalImages - 1 : prev - 1));
     };
 
+    // ─── Funciones para scrollear la galería lateral ───
+    const scrollSideGallery = (direction: 'up' | 'down') => {
+        if (sideGalleryRef.current) {
+            const scrollAmount = direction === 'up' ? -250 : 250;
+            sideGalleryRef.current.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+        }
+    };
+
+    const scrollSimilar = (direction: 'left' | 'right') => {
+        if (similarCarouselRef.current) {
+            const scrollAmount = direction === 'left' ? -300 : 300;
+            similarCarouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#faf7f2] flex flex-col pt-28">
+            <div className="min-h-screen bg-background flex flex-col pt-28 transition-colors duration-300">
                 <Header />
                 <div className="flex-1 flex items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-gray-200 border-t-[#8B1A1A] rounded-full animate-spin"></div>
+                    <div className="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
                 </div>
             </div>
         );
@@ -165,12 +185,12 @@ export default function PropertyDetailPage() {
 
     if (!property) {
         return (
-            <div className="min-h-screen bg-[#faf7f2] flex flex-col pt-28 text-center px-4">
+            <div className="min-h-screen bg-background flex flex-col pt-28 text-center px-4 transition-colors duration-300">
                 <Header />
                 <div className="flex-1 flex flex-col items-center justify-center">
-                    <h2 className="text-3xl font-bold text-[#2a1f1a] mb-4">Propiedad no encontrada</h2>
-                    <p className="text-gray-600 mb-8">La propiedad que buscás no existe o fue dada de baja.</p>
-                    <Link href="/propiedades" className="bg-[#8B1A1A] text-white px-6 py-3 rounded-lg font-bold">
+                    <h2 className="text-3xl font-bold text-foreground mb-4 font-serif">Propiedad no encontrada</h2>
+                    <p className="text-foreground/60 mb-8 font-sans">La propiedad que buscás no existe o fue dada de baja.</p>
+                    <Link href="/propiedades" className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-lg font-bold font-sans transition-colors">
                         Volver al catálogo
                     </Link>
                 </div>
@@ -178,8 +198,9 @@ export default function PropertyDetailPage() {
         );
     }
 
-    const images = property.images && property.images.length > 0 ? property.images : [];
-    const mainImage = images[0];
+    const images = Array.isArray(property.images) ? property.images : [];
+    const mainImage = images.length > 0 ? images[0] : null;
+    const sideImages = images.slice(1);
 
     let parsedFeatures: string[] = [];
     if (property.features) {
@@ -198,134 +219,145 @@ export default function PropertyDetailPage() {
     const waMessage = encodeURIComponent(`Hola! Estoy interesado en esta propiedad:\n\n${property.title} (${property.operation_type})\n${currentUrl}`);
 
     return (
-        <div className="bg-[#faf7f2] min-h-screen pb-20 pt-28">
+        <div className="bg-background min-h-screen pb-20 pt-28 transition-colors duration-300">
             <Header />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
                 {/* ── BREADCRUMBS ── */}
-                <div className="mb-6 flex items-center text-sm text-gray-500 font-medium">
-                    <Link href="/propiedades" className="hover:text-[#8B1A1A] transition-colors">Propiedades</Link>
+                <div className="mb-6 flex items-center text-sm text-foreground/50 font-medium font-sans">
+                    <Link href="/propiedades" className="hover:text-primary transition-colors">Propiedades</Link>
                     <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-                    <span className="text-gray-900">{property.operation_type} en {property.localidad}</span>
+                    <span className="text-foreground/90">{property.operation_type} en {property.localidad}</span>
                 </div>
 
-                {/* ── GALERÍA DE IMÁGENES ── */}
-                {images.length > 0 ? (
-                    <div className="relative rounded-2xl mb-10 h-[40vh] md:h-[50vh] lg:h-[60vh]">
+                {/* ── GALERÍA DE IMÁGENES (Minimalista con Scroll Vertical) ── */}
+                {images.length > 0 && mainImage ? (
+                    <div className="relative mb-10 h-[50vh] md:h-[60vh] lg:h-[70vh] flex gap-2">
 
-                        {/* Desktop: scroll horizontal con drag */}
+                        {/* Imagen Principal (Izquierda) */}
                         <div
-                            className="hidden md:flex h-full rounded-2xl overflow-x-scroll snap-x snap-mandatory gap-2 bg-black"
-                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-                            ref={(el) => {
-                                if (!el) return;
-                                // Drag to scroll
-                                let isDown = false, startX = 0, scrollLeft = 0;
-                                el.onmousedown = (e) => { isDown = true; el.style.cursor = 'grabbing'; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; };
-                                el.onmouseleave = () => { isDown = false; el.style.cursor = 'grab'; };
-                                el.onmouseup = () => { isDown = false; el.style.cursor = 'grab'; };
-                                el.onmousemove = (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - el.offsetLeft; el.scrollLeft = scrollLeft - (x - startX) * 1.5; };
-                                el.style.cursor = 'grab';
-                            }}
+                            className="relative flex-[2] md:flex-[3] h-full rounded-2xl overflow-hidden cursor-pointer group"
+                            onClick={() => openLightbox(0)}
                         >
-                            <style dangerouslySetInnerHTML={{ __html: `div::-webkit-scrollbar { display: none; }` }} />
+                            <Image
+                                src={mainImage}
+                                alt="Foto principal"
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                priority
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                        </div>
 
-                            {Array.from({ length: Math.ceil(images.length / 5) }).map((_, groupIndex) => {
-                                const groupImages = images.slice(groupIndex * 5, groupIndex * 5 + 5);
-                                return (
-                                    <div
-                                        key={groupIndex}
-                                        className="grid grid-cols-4 grid-rows-2 h-full gap-2 shrink-0 snap-start overflow-hidden rounded-2xl"
-                                        style={{ width: '100%', minWidth: '100%' }}
+                        {/* Columna Lateral (Fotos secundarias) */}
+                        {sideImages.length > 0 && (
+                            <div className="relative flex-1 hidden sm:flex flex-col h-full overflow-hidden">
+
+                                {/* Botón Arriba */}
+                                {sideImages.length > 2 && (
+                                    <button
+                                        onClick={() => scrollSideGallery('up')}
+                                        className="absolute top-2 left-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur text-gray-800 rounded-full flex items-center justify-center shadow-md hover:bg-white hover:text-primary transition-all opacity-0 hover:opacity-100 group-hover:opacity-100 focus:opacity-100"
+                                        style={{ opacity: 1 }}
                                     >
-                                        <div className="col-span-2 row-span-2 relative">
-                                            {groupImages[0] && (
-                                                <Image src={groupImages[0]} alt={`Foto ${groupIndex * 5 + 1}`} fill className="object-cover hover:opacity-90 transition-opacity cursor-pointer" onClick={() => openLightbox(groupIndex * 5)} />
-                                            )}
-                                        </div>
-                                        {[1, 2, 3, 4].map((offset) => (
-                                            <div key={offset} className="col-span-1 row-span-1 relative">
-                                                {groupImages[offset] ? (
-                                                    <Image src={groupImages[offset]} alt={`Foto ${groupIndex * 5 + offset + 1}`} fill className="object-cover hover:opacity-90 transition-opacity cursor-pointer" onClick={() => openLightbox(groupIndex * 5 + offset)} />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-900" />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7"></path></svg>
+                                    </button>
+                                )}
 
-                        {/* Mobile: carrusel simple */}
-                        <div
-                            className="md:hidden flex h-full rounded-2xl overflow-x-scroll snap-x snap-mandatory bg-black"
-                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                        >
-                            {images.map((img, index) => (
-                                <div key={index} className="relative h-full w-full shrink-0 snap-center cursor-pointer" onClick={() => openLightbox(index)}>
-                                    <Image src={img} alt={`Foto ${index + 1}`} fill className="object-cover" />
+                                {/* Contenedor con Scroll Vertical */}
+                                <div
+                                    ref={sideGalleryRef}
+                                    className="flex flex-col gap-2 h-full overflow-y-auto snap-y snap-mandatory hide-scroll pb-12"
+                                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                                >
+                                    <style dangerouslySetInnerHTML={{ __html: `.hide-scroll::-webkit-scrollbar { display: none; }` }} />
+
+                                    {sideImages.map((img, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="relative w-full h-[50%] shrink-0 snap-center rounded-2xl overflow-hidden cursor-pointer group"
+                                            onClick={() => openLightbox(idx + 1)}
+                                        >
+                                            <Image
+                                                src={img}
+                                                alt={`Foto ${idx + 2}`}
+                                                fill
+                                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+
+                                {/* Botón Abajo */}
+                                {sideImages.length > 2 && (
+                                    <button
+                                        onClick={() => scrollSideGallery('down')}
+                                        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur text-gray-800 rounded-full flex items-center justify-center shadow-md hover:bg-white hover:text-primary transition-all"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+                                )}
+                            </div>
+                        )}
 
                         <button
                             onClick={() => openLightbox(0)}
-                            className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-md hover:bg-white hover:scale-105 transition-all border border-gray-200 z-10"
+                            className="absolute bottom-6 right-6 sm:right-[calc(25%+1.5rem)] md:right-[calc(25%+1.5rem)] bg-white/95 backdrop-blur-sm text-gray-900 px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg hover:bg-white hover:scale-105 transition-all border border-gray-200 z-20 flex items-center gap-2 font-sans"
                         >
-                            Ver las {images.length} fotos
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                            Ver {images.length} fotos
                         </button>
                     </div>
                 ) : (
                     <div className="h-[40vh] bg-gray-200 rounded-2xl mb-10 flex items-center justify-center">
-                        <span className="text-gray-400 font-bold">Sin imágenes</span>
+                        <span className="text-gray-400 font-bold font-sans">Sin imágenes</span>
                     </div>
                 )}
 
                 {/* ── CUERPO PRINCIPAL Y SIDEBAR ── */}
-                <div className="flex flex-col lg:flex-row gap-10">
+                <div className="flex flex-col lg:flex-row gap-10 pb-10">
 
                     {/* ── COLUMNA IZQUIERDA (Detalles) ── */}
                     <div className="flex-1 min-w-0">
 
-                        {/* Encabezado: Título y Precio unidos */}
+                        {/* Encabezado: Título y Precio */}
                         <div className="mb-8 border-b border-gray-200 pb-8">
                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                 <div>
-                                    <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold uppercase tracking-widest rounded-md mb-3">
+                                    <span className="inline-block px-3 py-1 bg-gray-100 text-foreground/70 text-xs font-bold uppercase tracking-widest rounded-md mb-3 font-sans">
                                         {property.property_type} en {property.operation_type}
                                     </span>
-                                    <h1 className="text-3xl md:text-4xl font-bold text-[#2a1f1a]" style={{ fontFamily: "'Georgia', serif" }}>
+                                    <h1 className="text-3xl md:text-4xl font-bold text-foreground font-serif">
                                         {property.title}
                                     </h1>
                                 </div>
                                 <div className="md:text-right shrink-0">
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    <span className="text-xs font-bold text-foreground/50 uppercase tracking-widest block mb-1 font-sans">
                                         Precio
                                     </span>
-                                    <h2 className="text-4xl font-bold text-[#8B1A1A]">
+                                    <h2 className="text-4xl font-bold text-primary font-sans">
                                         {formatPrice(property.price, property.currency)}
                                     </h2>
                                 </div>
                             </div>
 
-                            <p className="flex items-center gap-2 text-gray-500 font-medium">
-                                <svg className="w-5 h-5 text-[#8B1A1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <p className="flex items-center gap-2 text-foreground/60 font-medium font-sans">
+                                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 {property.location}, {property.localidad}
                             </p>
                         </div>
 
                         {/* Ficha Resumen (Íconos) */}
-                        <div className="flex flex-wrap gap-4 md:gap-8 mb-10 py-6 px-2 bg-white rounded-xl shadow-sm border border-gray-100 justify-around">
+                        <div className="flex flex-wrap gap-4 md:gap-8 mb-10 py-6 px-2 bg-white rounded-xl shadow-sm border border-gray-100 justify-around font-sans">
 
                             {(property.environments !== undefined && property.environments > 0) && (
                                 <>
                                     <div className="flex flex-col items-center justify-center text-center">
-                                        {/* Icono de Ambientes mejorado (tipo plano/habitación) */}
-                                        <svg className="w-7 h-7 text-[#8B1A1A] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 12h8m0 0v8m0-8V4"></path></svg>
-                                        <span className="font-bold text-gray-900 text-lg">{property.environments}</span>
-                                        <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold mt-1">Ambientes</span>
+                                        <svg className="w-7 h-7 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 12h8m0 0v8m0-8V4"></path></svg>
+                                        <span className="font-bold text-foreground text-lg">{property.environments}</span>
+                                        <span className="text-xs text-foreground/60 uppercase tracking-widest font-semibold mt-1">Ambientes</span>
                                     </div>
                                     <div className="w-px h-12 bg-gray-200 hidden md:block"></div>
                                 </>
@@ -334,9 +366,9 @@ export default function PropertyDetailPage() {
                             {(property.bedrooms !== undefined && property.bedrooms > 0) && (
                                 <>
                                     <div className="flex flex-col items-center justify-center text-center">
-                                        <svg className="w-7 h-7 text-[#8B1A1A] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9V19M21 9V19M3 13H21M5 9V7a2 2 0 012-2h10a2 2 0 012 2v2"></path></svg>
-                                        <span className="font-bold text-gray-900 text-lg">{property.bedrooms}</span>
-                                        <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold mt-1">Dormitorios</span>
+                                        <svg className="w-7 h-7 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9V19M21 9V19M3 13H21M5 9V7a2 2 0 012-2h10a2 2 0 012 2v2"></path></svg>
+                                        <span className="font-bold text-foreground text-lg">{property.bedrooms}</span>
+                                        <span className="text-xs text-foreground/60 uppercase tracking-widest font-semibold mt-1">Dormitorios</span>
                                     </div>
                                     <div className="w-px h-12 bg-gray-200 hidden md:block"></div>
                                 </>
@@ -344,19 +376,19 @@ export default function PropertyDetailPage() {
 
                             {(property.bathrooms !== undefined && property.bathrooms > 0) && (
                                 <div className="flex flex-col items-center justify-center text-center">
-                                    <svg className="w-7 h-7 text-[#8B1A1A] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 12h16M4 12V8a4 4 0 018 0M4 12v6h16v-6"></path></svg>
-                                    <span className="font-bold text-gray-900 text-lg">{property.bathrooms}</span>
-                                    <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold mt-1">Baños</span>
+                                    <svg className="w-7 h-7 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 12h16M4 12V8a4 4 0 018 0M4 12v6h16v-6"></path></svg>
+                                    <span className="font-bold text-foreground text-lg">{property.bathrooms}</span>
+                                    <span className="text-xs text-foreground/60 uppercase tracking-widest font-semibold mt-1">Baños</span>
                                 </div>
                             )}
                         </div>
 
                         {/* Descripción */}
                         <div className="mb-10">
-                            <h3 className="text-2xl font-bold text-[#2a1f1a] mb-4" style={{ fontFamily: "'Georgia', serif" }}>
+                            <h3 className="text-2xl font-bold text-foreground mb-4 font-serif">
                                 Descripción
                             </h3>
-                            <p className="text-gray-600 leading-relaxed whitespace-pre-line text-[15px]">
+                            <p className="text-foreground/80 leading-relaxed whitespace-pre-line text-[15px] font-sans">
                                 {property.description || "Esta propiedad no cuenta con una descripción detallada en este momento."}
                             </p>
                         </div>
@@ -364,14 +396,14 @@ export default function PropertyDetailPage() {
                         {/* Características */}
                         {parsedFeatures.length > 0 && (
                             <div className="mb-10">
-                                <h3 className="text-2xl font-bold text-[#2a1f1a] mb-6" style={{ fontFamily: "'Georgia', serif" }}>
+                                <h3 className="text-2xl font-bold text-foreground mb-6 font-serif">
                                     Características
                                 </h3>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-sans">
                                     {parsedFeatures.map((feat, idx) => (
                                         <div key={idx} className="flex items-center gap-3">
-                                            <svg className="w-5 h-5 text-[#8B1A1A] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                            <span className="text-gray-700 font-medium capitalize">{feat}</span>
+                                            <svg className="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                            <span className="text-foreground/80 font-medium capitalize">{feat}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -380,7 +412,7 @@ export default function PropertyDetailPage() {
 
                         {/* Ubicación / Mapa Más Grande */}
                         <div className="mb-16">
-                            <h3 className="text-2xl font-bold text-[#2a1f1a] mb-6" style={{ fontFamily: "'Georgia', serif" }}>
+                            <h3 className="text-2xl font-bold text-foreground mb-6 font-serif">
                                 Ubicación
                             </h3>
                             <div className="w-full h-[450px] bg-gray-200 rounded-xl overflow-hidden border border-gray-300 relative z-0 shadow-sm">
@@ -388,39 +420,17 @@ export default function PropertyDetailPage() {
                                     <MapViewer lat={lat} lng={lng} />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-gray-500 font-medium bg-white px-4 py-2 rounded-lg shadow-sm">Ubicación exacta no especificada</span>
+                                        <span className="text-gray-500 font-medium bg-white px-4 py-2 rounded-lg shadow-sm font-sans">Ubicación exacta no especificada</span>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* ── CARRUSEL PROPIEDADES SIMILARES ── */}
-                        {similarProperties.length > 0 && (
-                            <div className="mb-10 pt-10 border-t border-gray-200">
-                                <h3 className="text-2xl font-bold text-[#2a1f1a] mb-6" style={{ fontFamily: "'Georgia', serif" }}>
-                                    Más opciones en {property.localidad}
-                                </h3>
-                                <div className="flex overflow-x-auto pb-6 gap-6 hide-scroll snap-x">
-                                    <style dangerouslySetInnerHTML={{
-                                        __html: `
-                                        .hide-scroll::-webkit-scrollbar { display: none; }
-                                        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-                                    `}} />
-
-                                    {similarProperties.map(prop => (
-                                        <div key={prop.id} className="snap-start flex-shrink-0">
-                                            <MiniPropertyCard property={prop} />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
                     </div>
 
                     {/* ── COLUMNA DERECHA (Sidebar Pegajoso de Contacto) ── */}
-                    <aside className="w-full lg:w-[380px] shrink-0">
-                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden sticky top-28">
+                    <aside className="w-full lg:w-[380px] shrink-0 relative font-sans">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden sticky top-28 z-10">
 
                             {/* Cabecera del Formulario */}
                             <div className="bg-gray-50 border-b border-gray-200 p-6 flex items-center gap-4">
@@ -433,8 +443,8 @@ export default function PropertyDetailPage() {
                                     />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Contactar con</p>
-                                    <h4 className="font-bold text-gray-900 text-lg leading-tight">Asesor de ventas de Minini Propiedades</h4>
+                                    <p className="text-xs text-foreground/50 uppercase tracking-widest font-bold mb-1">Contactar con</p>
+                                    <h4 className="font-bold text-foreground text-lg leading-tight">Asesor de ventas de Minini Propiedades</h4>
                                 </div>
                             </div>
 
@@ -460,7 +470,7 @@ export default function PropertyDetailPage() {
                                             value={formData.name}
                                             onChange={handleFormChange}
                                             placeholder="Nombre completo *"
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-[#8B1A1A] transition-colors"
+                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
                                         />
                                     </div>
                                     <div>
@@ -471,7 +481,7 @@ export default function PropertyDetailPage() {
                                             value={formData.phone}
                                             onChange={handleFormChange}
                                             placeholder="Teléfono *"
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-[#8B1A1A] transition-colors"
+                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
                                         />
                                     </div>
                                     <div>
@@ -482,7 +492,7 @@ export default function PropertyDetailPage() {
                                             value={formData.email}
                                             onChange={handleFormChange}
                                             placeholder="Email *"
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-[#8B1A1A] transition-colors"
+                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
                                         />
                                     </div>
                                     <div>
@@ -492,14 +502,14 @@ export default function PropertyDetailPage() {
                                             value={formData.message}
                                             onChange={handleFormChange}
                                             rows={4}
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-[#8B1A1A] transition-colors resize-none"
+                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors resize-none"
                                         ></textarea>
                                     </div>
 
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold py-3.5 rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3.5 rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? 'Enviando...' : 'Enviar consulta'}
                                     </button>
@@ -507,7 +517,7 @@ export default function PropertyDetailPage() {
 
                                 <div className="mt-5 flex items-center gap-4">
                                     <div className="flex-1 h-px bg-gray-200"></div>
-                                    <span className="text-xs text-gray-400 font-bold uppercase">O mediante</span>
+                                    <span className="text-xs text-foreground/40 font-bold uppercase">O mediante</span>
                                     <div className="flex-1 h-px bg-gray-200"></div>
                                 </div>
 
@@ -525,6 +535,41 @@ export default function PropertyDetailPage() {
                     </aside>
 
                 </div>
+
+                {/* ── CARRUSEL PROPIEDADES SIMILARES ── */}
+                {similarProperties.length > 0 && (
+                    <div className="pt-10 border-t border-gray-200">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-2xl font-bold text-foreground font-serif">
+                                Más opciones en {property.localidad}
+                            </h3>
+
+                            {/* Botones para scrollear el carrusel de similares */}
+                            <div className="hidden md:flex gap-2">
+                                <button onClick={() => scrollSimilar('left')} className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-foreground/60 hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                                </button>
+                                <button onClick={() => scrollSimilar('right')} className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-foreground/60 hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            ref={similarCarouselRef}
+                            className="flex overflow-x-auto pb-6 gap-6 hide-scroll snap-x"
+                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                        >
+                            <style dangerouslySetInnerHTML={{ __html: `.hide-scroll::-webkit-scrollbar { display: none; }` }} />
+
+                            {similarProperties.map(prop => (
+                                <div key={prop.id} className="snap-start flex-shrink-0">
+                                    <MiniPropertyCard property={prop} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* ── LIGHTBOX (Visor Pantalla Completa) ── */}
@@ -537,7 +582,7 @@ export default function PropertyDetailPage() {
                     </button>
 
                     {/* Contador */}
-                    <div className="absolute top-6 left-6 text-white font-medium tracking-widest text-sm z-[110] bg-black/50 px-3 py-1 rounded-full">
+                    <div className="absolute top-6 left-6 text-white font-medium tracking-widest text-sm z-[110] bg-black/50 px-3 py-1 rounded-full font-sans">
                         {currentImageIndex + 1} / {images.length}
                     </div>
 
@@ -548,14 +593,16 @@ export default function PropertyDetailPage() {
 
                     {/* Imagen Grande */}
                     <div className="relative w-full h-full max-w-[90vw] max-h-[85vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                        <Image
-                            src={images[currentImageIndex]}
-                            alt={`Foto ${currentImageIndex + 1}`}
-                            fill
-                            className="object-contain"
-                            sizes="100vw"
-                            priority
-                        />
+                        {images[currentImageIndex] && (
+                            <Image
+                                src={images[currentImageIndex]}
+                                alt={`Foto ${currentImageIndex + 1}`}
+                                fill
+                                className="object-contain"
+                                sizes="100vw"
+                                priority
+                            />
+                        )}
                     </div>
 
                     {/* Controles: Siguiente */}

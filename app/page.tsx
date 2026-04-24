@@ -15,9 +15,9 @@ function formatPrice(price: number | null, currency: string) {
 
 function getStatusColor(op: string) {
   const opLower = op?.toLowerCase() || '';
-  if (opLower.includes("alquiler")) return "bg-[#1a6b3c] text-white";
-  if (opLower.includes("pozo")) return "bg-[#1A3B8B] text-white";
-  return "bg-[#8B1A1A] text-white";
+  if (opLower.includes("alquiler")) return "bg-green-700 text-white";
+  if (opLower.includes("pozo")) return "bg-blue-800 text-white";
+  return "bg-primary text-white";
 }
 
 // ─── PropertyCard Component ───────────────────────────────────────────────────
@@ -36,8 +36,8 @@ function PropertyCard({ property }: { property: Property }) {
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full bg-[#e8e0d4] flex items-center justify-center">
-              <svg className="w-12 h-12 text-[#b0a090]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
               </svg>
             </div>
@@ -53,17 +53,18 @@ function PropertyCard({ property }: { property: Property }) {
         </div>
 
         <div className="p-4">
-          <h3 className="font-bold text-[#2a1f1a] text-base leading-snug mb-1 group-hover:text-[#8B1A1A] transition-colors line-clamp-2" style={{ fontFamily: "'Georgia', serif" }}>
+          {/* Aquí aplicamos font-serif (Aleo) y hover:text-primary */}
+          <h3 className="font-serif font-bold text-foreground text-base leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-2">
             {property.title}
           </h3>
-          <p className="text-xs text-[#8b7b6e] flex items-center gap-1 mb-3">
+          <p className="text-xs text-foreground/60 flex items-center gap-1 mb-3">
             <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
             </svg>
             {property.location || 'Ubicación a consultar'}
           </p>
 
-          <div className="flex items-center gap-4 text-xs text-[#6b5a4e] border-t border-[#f0ebe0] pt-3">
+          <div className="flex items-center gap-4 text-xs text-foreground/70 border-t border-gray-100 pt-3">
             {property.bedrooms > 0 && (
               <span className="flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,11 +98,10 @@ function PropertyCard({ property }: { property: Property }) {
 
 // ─── Main Page Component (SSR) ────────────────────────────────────────────────
 export default async function HomePage() {
-  // Traemos los datos directamente desde el servidor. Cero hooks.
   const { data } = await supabase
     .from("properties")
     .select("*")
-    .eq("status", "disponible") // <- Corrección vital para que coincida con la base de datos
+    .eq("status", "disponible")
     .order("created_at", { ascending: false })
     .limit(6);
 
@@ -116,7 +116,7 @@ export default async function HomePage() {
         <section className="relative min-h-[88vh] flex flex-col">
           <div className="absolute inset-0">
             <Image
-              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png" // Me aseguré de que use la url pública limpia
+              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
               alt="Hero"
               fill
               priority
@@ -127,30 +127,25 @@ export default async function HomePage() {
           </div>
 
           <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center px-6 lg:px-16 pt-10 pb-32 max-w-7xl mx-auto w-full">
-            <h1
-              className="text-white text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-2xl mx-auto"
-              style={{ fontFamily: "'Georgia', serif" }}
-            >
+            <h1 className="font-serif text-white text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-2xl mx-auto">
               Lo que buscas,
               <br />
-              <span className="text-[#f5c0b0]">lo tenemos.</span>
+              <span className="text-secondary">lo tenemos.</span>
             </h1>
-            <p className="text-white/70 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+            <p className="text-white/70 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed font-sans">
               Encontrá tu próxima propiedad con la experiencia y confianza de años en el mercado inmobiliario.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/propiedades"
-                className="px-7 py-3.5 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold text-sm tracking-widest uppercase rounded-sm transition-all duration-200 shadow-lg active:scale-95"
-                style={{ fontFamily: "'Georgia', serif" }}
+                className="font-serif px-7 py-3.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm tracking-widest uppercase rounded-sm transition-all duration-200 shadow-lg active:scale-95"
               >
                 Ver propiedades
               </Link>
               <Link
                 href="/contacto"
-                className="px-7 py-3.5 border-2 border-white/60 hover:border-white text-white font-semibold text-sm tracking-widest uppercase rounded-sm transition-all duration-200 backdrop-blur-sm hover:bg-white/10"
-                style={{ fontFamily: "'Georgia', serif" }}
+                className="font-serif px-7 py-3.5 border-2 border-white/60 hover:border-white text-white font-semibold text-sm tracking-widest uppercase rounded-sm transition-all duration-200 backdrop-blur-sm hover:bg-white/10"
               >
                 Ponte en contacto
               </Link>
@@ -163,21 +158,19 @@ export default async function HomePage() {
         </section>
 
         {/* ── FEATURED PROPERTIES ──────────────────────────────────────────── */}
-        <section className="bg-[#faf7f2] pt-24 pb-20 px-6 lg:px-10">
+        {/* Cambiamos el color harcodeado por bg-background */}
+        <section className="bg-background pt-24 pb-20 px-6 lg:px-10">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-end justify-between mb-8">
               <div>
-                <h2
-                  className="text-2xl md:text-3xl font-bold text-[#2a1f1a]"
-                  style={{ fontFamily: "'Georgia', serif" }}
-                >
+                <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground">
                   Propiedades destacadas
                 </h2>
-                <div className="mt-2 h-[3px] w-14 bg-[#8B1A1A] rounded-full" />
+                <div className="mt-2 h-[3px] w-14 bg-primary rounded-full" />
               </div>
               <Link
                 href="/propiedades"
-                className="flex items-center gap-2 text-[#8B1A1A] text-sm font-semibold uppercase tracking-widest hover:gap-3 transition-all duration-200"
+                className="flex items-center gap-2 text-primary text-sm font-semibold uppercase tracking-widest hover:gap-3 transition-all duration-200"
               >
                 Ver más
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +180,7 @@ export default async function HomePage() {
             </div>
 
             {properties.length === 0 ? (
-              <div className="text-center py-20 text-[#8b7b6e]">
+              <div className="text-center py-20 text-foreground/60">
                 <p className="text-lg">No hay propiedades disponibles en este momento.</p>
               </div>
             ) : (

@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { supabase } from "../lib/supabase";
-import Header from "../components/Header";
-import { Property } from "../types";
+import { supabase } from "../lib/supabase"; // Ajustá esta ruta si está mal
+import Header from "../components/Header"; // Ajustá esta ruta si está mal
+import { Property } from "../types"; // Ajustá esta ruta si está mal
 import { useSearchParams } from "next/navigation";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -17,14 +17,31 @@ function formatPrice(price: number | null, currency: string) {
 
 function getStatusColor(op: string) {
     const opLower = op?.toLowerCase() || '';
-    if (opLower.includes("alquiler")) return "bg-[#1a6b3c] text-white";
-    if (opLower.includes("pozo")) return "bg-[#1A3B8B] text-white";
-    return "bg-[#8B1A1A] text-white";
+    if (opLower.includes("alquiler")) return "bg-green-700 text-white";
+    if (opLower.includes("pozo")) return "bg-blue-800 text-white";
+    return "bg-primary text-white"; // <-- Color unificado de la marca
+}
+
+// ─── Deduplica partes repetidas en la dirección ──────────────────────────────
+function deduplicateLocation(location: string | null): string {
+    if (!location) return 'Ubicación a consultar';
+
+    const parts = location.split(',').map(p => p.trim());
+    const seen = new Set<string>();
+    const unique = parts.filter(p => {
+        const lower = p.toLowerCase();
+        if (seen.has(lower)) return false;
+        seen.add(lower);
+        return true;
+    });
+
+    return unique.join(', ');
 }
 
 // ─── Tarjeta de Propiedad ───────────────────────────────────────────────────
 function PropertyCard({ property }: { property: Property }) {
-    const img = property.images?.[0] ?? null;
+    const imgArray = Array.isArray(property.images) ? property.images : [];
+    const img = imgArray.length > 0 ? imgArray[0] : null;
 
     return (
         <Link href={`/propiedades/${property.id}`} className="group block h-full">
@@ -38,34 +55,34 @@ function PropertyCard({ property }: { property: Property }) {
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
-                        <div className="w-full h-full bg-[#e8e0d4] flex items-center justify-center">
-                            <svg className="w-12 h-12 text-[#b0a090]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
                             </svg>
                         </div>
                     )}
 
-                    <span className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm ${getStatusColor(property.operation_type)}`}>
+                    <span className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm font-sans ${getStatusColor(property.operation_type)}`}>
                         {property.operation_type}
                     </span>
 
-                    <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-sm">
+                    <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-sm font-sans">
                         {formatPrice(property.price, property.currency)}
                     </div>
                 </div>
 
                 <div className="p-5 flex flex-col flex-1">
-                    <h3 className="font-bold text-[#2a1f1a] text-lg leading-snug mb-2 group-hover:text-[#8B1A1A] transition-colors line-clamp-2" style={{ fontFamily: "'Georgia', serif" }}>
+                    <h3 className="font-bold font-serif text-foreground text-lg leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
                         {property.title}
                     </h3>
-                    <p className="text-sm text-[#8b7b6e] flex items-start gap-1.5 mb-4 flex-1">
+                    <p className="text-sm text-foreground/60 flex items-start gap-1.5 mb-4 flex-1 font-sans">
                         <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
                         </svg>
-                        <span className="line-clamp-2">{property.location || 'Ubicación a consultar'}</span>
+                        <span className="line-clamp-2">{deduplicateLocation(property.location)}</span>
                     </p>
 
-                    <div className="flex items-center gap-4 text-sm text-[#6b5a4e] border-t border-gray-100 pt-4 mt-auto">
+                    <div className="flex items-center gap-4 text-sm text-foreground/70 border-t border-gray-100 pt-4 mt-auto font-sans">
                         {property.bedrooms > 0 && (
                             <span className="flex items-center gap-1.5 font-medium">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,11 +135,11 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
     const pages = getPages();
 
     return (
-        <div className="flex items-center justify-center gap-1.5 mt-10">
+        <div className="flex items-center justify-center gap-1.5 mt-10 font-sans">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-[#8B1A1A] hover:text-[#8B1A1A] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-foreground/40 hover:border-primary hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
             >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -131,7 +148,7 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
 
             {pages.map((page, i) =>
                 page === '...' ? (
-                    <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-gray-300 text-sm select-none">
+                    <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-foreground/30 text-sm select-none">
                         ···
                     </span>
                 ) : (
@@ -139,8 +156,8 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
                         key={`page-${page}`}
                         onClick={() => onPageChange(page as number)}
                         className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${page === currentPage
-                            ? 'bg-[#8B1A1A] text-white'
-                            : 'text-gray-500 hover:text-[#8B1A1A]'
+                            ? 'bg-primary text-white'
+                            : 'text-foreground/50 hover:text-primary'
                             }`}
                     >
                         {page}
@@ -151,7 +168,7 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-[#8B1A1A] hover:text-[#8B1A1A] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-foreground/40 hover:border-primary hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
             >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -192,7 +209,6 @@ export default function PropiedadesPage() {
                 }, {} as Record<string, string[]>);
                 setOptions(grouped);
 
-                // Si no hay opType definido por la URL, intentamos usar el primero disponible (ej: Venta)
                 if (!searchParams.get("operacion") && grouped['tipo_operacion'] && grouped['tipo_operacion'].length > 0) {
                     setOpType(grouped['tipo_operacion'][0]);
                 }
@@ -235,7 +251,6 @@ export default function PropiedadesPage() {
             if (!searchableText.includes(query)) return false;
         }
 
-        // Filtro Tolerante: Usamos includes() para ignorar errores tipográficos menores (ej: Alquier vs Alquiler)
         if (opType && !p.operation_type?.toLowerCase().includes(opType.toLowerCase().trim())) return false;
 
         if (propType && p.property_type !== propType) return false;
@@ -280,23 +295,23 @@ export default function PropiedadesPage() {
     };
 
     return (
-        <div className="bg-[#faf7f2] min-h-screen pb-20 pt-28">
+        <div className="bg-background min-h-screen pb-20 pt-28 transition-colors duration-300">
             <Header />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col lg:flex-row gap-8">
 
                 {/* ── SIDEBAR FILTROS ── */}
                 <aside className="w-full lg:w-[320px] shrink-0">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24 font-sans">
 
                         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                            <h3 className="font-bold text-gray-900 text-xl" style={{ fontFamily: "'Georgia', serif" }}>
+                            <h3 className="font-bold text-foreground font-serif text-xl">
                                 Filtros
                             </h3>
                             {(searchQuery || ambientesSelected.length > 0 || minPrice || maxPrice || propType || loc || opType !== '') && (
                                 <button
                                     onClick={() => { setSearchQuery(''); setAmbientesSelected([]); setMinPrice(''); setMaxPrice(''); setPropType(''); setLoc(''); setOpType(''); resetPage(); }}
-                                    className="text-xs text-[#8B1A1A] hover:underline font-bold"
+                                    className="text-xs text-primary hover:underline font-bold"
                                 >
                                     Limpiar
                                 </button>
@@ -307,10 +322,10 @@ export default function PropiedadesPage() {
 
                             {/* 0. Buscador Global */}
                             <div>
-                                <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase tracking-wider">Buscar</h4>
+                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Buscar</h4>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg className="h-5 w-5 text-foreground/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
@@ -319,26 +334,26 @@ export default function PropiedadesPage() {
                                         placeholder="Ej: Depto con cochera..."
                                         value={searchQuery}
                                         onChange={(e) => { setSearchQuery(e.target.value); resetPage(); }}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-lg outline-none focus:border-[#8B1A1A] focus:bg-white transition-colors"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 text-foreground font-medium rounded-lg outline-none focus:border-primary focus:bg-white transition-colors"
                                     />
                                 </div>
                             </div>
 
-                            {/* 1. Operación (Botones Dinámicos basados en la BD) */}
+                            {/* 1. Operación */}
                             <div>
-                                <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase tracking-wider">Operación</h4>
+                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Operación</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {options.tipo_operacion?.map((op, idx) => (
                                         <button
                                             key={`op-${idx}`}
-                                            className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === op ? 'bg-[#8B1A1A] text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                            className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === op ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-foreground/70 hover:bg-gray-200'}`}
                                             onClick={() => { setOpType(op); resetPage(); }}
                                         >
                                             {op}
                                         </button>
                                     ))}
                                     <button
-                                        className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === '' ? 'bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === '' ? 'bg-foreground text-background shadow-sm' : 'bg-gray-100 text-foreground/70 hover:bg-gray-200'}`}
                                         onClick={() => { setOpType(''); resetPage(); }}
                                     >
                                         Todas
@@ -348,17 +363,17 @@ export default function PropiedadesPage() {
 
                             {/* 2. Tipo de Propiedad */}
                             <div>
-                                <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase tracking-wider">Tipo de Propiedad</h4>
+                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Tipo de Propiedad</h4>
                                 <div className="relative">
                                     <select
-                                        className="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-[#8B1A1A] focus:bg-white transition-colors"
+                                        className="w-full bg-gray-50 border border-gray-200 text-foreground font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-primary focus:bg-white transition-colors"
                                         value={propType}
                                         onChange={e => { setPropType(e.target.value); resetPage(); }}
                                     >
                                         <option value="">Cualquier tipo</option>
                                         {options.tipo_propiedad?.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </div>
@@ -366,17 +381,17 @@ export default function PropiedadesPage() {
 
                             {/* 3. Ubicación */}
                             <div>
-                                <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase tracking-wider">Localidad</h4>
+                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Localidad</h4>
                                 <div className="relative">
                                     <select
-                                        className="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-[#8B1A1A] focus:bg-white transition-colors"
+                                        className="w-full bg-gray-50 border border-gray-200 text-foreground font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-primary focus:bg-white transition-colors"
                                         value={loc}
                                         onChange={e => { setLoc(e.target.value); resetPage(); }}
                                     >
                                         <option value="">Todas las localidades</option>
                                         {options.localidad?.map(l => <option key={l} value={l}>{l}</option>)}
                                     </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </div>
@@ -384,7 +399,7 @@ export default function PropiedadesPage() {
 
                             {/* 4. Ambientes */}
                             <div>
-                                <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase tracking-wider">Ambientes</h4>
+                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Ambientes</h4>
                                 <div className="grid grid-cols-4 gap-2">
                                     {['1', '2', '3', '4+'].map((amb, idx) => {
                                         const isSelected = ambientesSelected.includes(amb);
@@ -393,8 +408,8 @@ export default function PropiedadesPage() {
                                                 key={`amb-${idx}`}
                                                 onClick={() => handleAmbienteToggle(amb)}
                                                 className={`py-2 px-1 text-center font-bold text-sm rounded-lg border transition-all duration-200 ${isSelected
-                                                    ? 'bg-red-50 border-[#8B1A1A] text-[#8B1A1A]'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                                                    ? 'bg-primary/10 border-primary text-primary'
+                                                    : 'bg-white border-gray-200 text-foreground/60 hover:border-gray-300 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {amb}
@@ -406,27 +421,27 @@ export default function PropiedadesPage() {
 
                             {/* 5. Precio */}
                             <div>
-                                <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase tracking-wider">Precio (U$S)</h4>
+                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Precio (U$S)</h4>
                                 <div className="flex items-center gap-2">
                                     <div className="relative flex-1">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 font-medium">$</span>
                                         <input
                                             type="number"
                                             placeholder="Mínimo"
                                             value={minPrice}
                                             onChange={e => { setMinPrice(e.target.value); resetPage(); }}
-                                            className="w-full pl-7 pr-2 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-[#8B1A1A] outline-none text-sm font-medium transition-colors"
+                                            className="w-full pl-7 pr-2 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary outline-none text-sm font-medium transition-colors text-foreground"
                                         />
                                     </div>
-                                    <span className="text-gray-300 font-bold">-</span>
+                                    <span className="text-foreground/30 font-bold">-</span>
                                     <div className="relative flex-1">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 font-medium">$</span>
                                         <input
                                             type="number"
                                             placeholder="Máximo"
                                             value={maxPrice}
                                             onChange={e => { setMaxPrice(e.target.value); resetPage(); }}
-                                            className="w-full pl-7 pr-2 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-[#8B1A1A] outline-none text-sm font-medium transition-colors"
+                                            className="w-full pl-7 pr-2 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary outline-none text-sm font-medium transition-colors text-foreground"
                                         />
                                     </div>
                                 </div>
@@ -437,16 +452,16 @@ export default function PropiedadesPage() {
                 </aside>
 
                 {/* ── GRILLA DE PROPIEDADES ── */}
-                <div className="flex-1 flex flex-col min-h-[600px]">
+                <div className="flex-1 flex flex-col min-h-[600px] font-sans">
                     <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-b border-gray-200 pb-4">
-                        <h2 className="text-2xl md:text-3xl font-bold text-[#2a1f1a]" style={{ fontFamily: "'Georgia', serif" }}>
+                        <h2 className="text-2xl md:text-3xl font-bold text-foreground font-serif">
                             {loading ? "Buscando..." : `${filteredProperties.length} Propiedades`}
                         </h2>
 
                         <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider hidden sm:inline">Ordenar por:</span>
+                            <span className="text-sm font-semibold text-foreground/50 uppercase tracking-wider hidden sm:inline">Ordenar por:</span>
                             <select
-                                className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-[#8B1A1A] focus:border-[#8B1A1A] block p-2 outline-none font-medium cursor-pointer shadow-sm w-full sm:w-auto"
+                                className="bg-white border border-gray-300 text-foreground/80 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 outline-none font-medium cursor-pointer shadow-sm w-full sm:w-auto"
                                 value={sortOrder}
                                 onChange={(e) => { setSortOrder(e.target.value); resetPage(); }}
                             >
@@ -459,13 +474,13 @@ export default function PropiedadesPage() {
 
                     {loading ? (
                         <div className="py-20 flex justify-center flex-1">
-                            <div className="w-10 h-10 border-4 border-gray-200 border-t-[#8B1A1A] rounded-full animate-spin"></div>
+                            <div className="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
                         </div>
                     ) : filteredProperties.length === 0 ? (
                         <div className="py-20 flex flex-col items-center justify-center text-center bg-white rounded-xl border border-gray-100 shadow-sm px-4 flex-1">
-                            <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">No encontramos coincidencias</h3>
-                            <p className="text-gray-500">Probá ajustando los filtros de la izquierda.</p>
+                            <svg className="w-16 h-16 text-foreground/20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <h3 className="text-xl font-bold text-foreground/80 mb-2">No encontramos coincidencias</h3>
+                            <p className="text-foreground/50">Probá ajustando los filtros de la izquierda.</p>
                         </div>
                     ) : (
                         <>

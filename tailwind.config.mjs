@@ -10,8 +10,19 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        'brand-red': '#D60102', 
+        primary: {
+          DEFAULT: "var(--primary)",
+          hover: "var(--primary-hover)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          hover: "var(--secondary-hover)",
+        }
       },
+      fontFamily: {
+        sans: ['var(--font-jost)', 'sans-serif'],
+        serif: ['var(--font-aleo)', 'serif'],
+      }
     },
   },
   plugins: [],

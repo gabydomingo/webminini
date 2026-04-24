@@ -26,12 +26,12 @@ export default function Header() {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-          ? "bg-[#f5f0e8]/95 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.08)]"
-          : "bg-[#f5f0e8]"
+          ? "bg-background/95 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.08)]"
+          : "bg-background"
           }`}
       >
         {/* Top accent line */}
-        <div className="h-[3px] w-full bg-gradient-to-r from-[#8B1A1A] via-[#c0392b] to-[#8B1A1A]" />
+        <div className="h-[3px] w-full bg-gradient-to-r from-primary via-[#c0392b] to-primary" />
 
         <div className="w-full pl-8 pr-6 lg:pl-16 lg:pr-10">
           <div className="flex items-center justify-between h-[96px]">
@@ -50,14 +50,6 @@ export default function Header() {
                   priority
                 />
               </div>
-              {/* <div className="flex flex-col leading-tight">
-                <span className="text-[#8B1A1A] font-bold text-lg tracking-wide uppercase" style={{ fontFamily: "'Georgia', serif", letterSpacing: "0.08em" }}>
-                  Minini
-                </span>
-                <span className="text-[#6b5a4e] text-[10px] tracking-[0.25em] uppercase font-medium">
-                  Propiedades
-                </span>
-              </div> */}
             </Link>
 
             {/* Desktop Nav */}
@@ -66,22 +58,12 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="relative px-4 py-2 text-sm text-[#4a3728] tracking-wide font-medium group transition-colors duration-200 hover:text-[#8B1A1A]"
-                  style={{ fontFamily: "'Georgia', serif" }}
+                  className="relative px-4 py-2 text-sm text-foreground/80 tracking-wide font-serif font-medium group transition-colors duration-200 hover:text-primary"
                 >
                   {link.label}
-                  <span className="absolute bottom-1 left-4 right-4 h-[1.5px] bg-[#8B1A1A] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
+                  <span className="absolute bottom-1 left-4 right-4 h-[1.5px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
                 </Link>
               ))}
-
-              {/* CTA Button */}
-              {/* <Link
-                href="/propiedades"
-                className="ml-4 px-5 py-2 bg-[#8B1A1A] text-[#f5f0e8] text-sm font-semibold tracking-wider uppercase rounded-sm hover:bg-[#6e1414] active:scale-95 transition-all duration-200 shadow-sm"
-                style={{ fontFamily: "'Georgia', serif", letterSpacing: "0.12em" }}
-              >
-                Ver Propiedades
-              </Link> */}
             </nav>
 
             {/* Mobile Menu Button */}
@@ -90,9 +72,9 @@ export default function Header() {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Abrir menú"
             >
-              <span className={`block h-[2px] w-6 bg-[#8B1A1A] transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-[7px]" : ""}`} />
-              <span className={`block h-[2px] w-6 bg-[#8B1A1A] transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-              <span className={`block h-[2px] w-6 bg-[#8B1A1A] transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-[7px]" : ""}`} />
+              <span className={`block h-[2px] w-6 bg-primary transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-[7px]" : ""}`} />
+              <span className={`block h-[2px] w-6 bg-primary transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
+              <span className={`block h-[2px] w-6 bg-primary transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-[7px]" : ""}`} />
             </button>
           </div>
         </div>
@@ -100,7 +82,7 @@ export default function Header() {
         {/* Mobile Menu */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-400 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-            } bg-[#f0ebe0] border-t border-[#8B1A1A]/15`}
+            } bg-background border-t border-primary/15`}
         >
           <nav className="flex flex-col px-6 py-4 gap-1">
             {navLinks.map((link) => (
@@ -108,8 +90,7 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className="py-3 text-[#4a3728] text-sm font-medium border-b border-[#8B1A1A]/10 last:border-0 hover:text-[#8B1A1A] hover:pl-2 transition-all duration-200"
-                style={{ fontFamily: "'Georgia', serif" }}
+                className="py-3 font-serif text-foreground/90 text-sm font-medium border-b border-primary/10 last:border-0 hover:text-primary hover:pl-2 transition-all duration-200"
               >
                 {link.label}
               </Link>
@@ -117,8 +98,7 @@ export default function Header() {
             <Link
               href="/propiedades"
               onClick={() => setMenuOpen(false)}
-              className="mt-3 py-3 text-center bg-[#8B1A1A] text-[#f5f0e8] text-sm font-semibold tracking-widest uppercase rounded-sm"
-              style={{ fontFamily: "'Georgia', serif" }}
+              className="mt-3 py-3 text-center bg-primary text-white text-sm font-semibold tracking-widest uppercase rounded-sm font-serif"
             >
               Ver Propiedades
             </Link>

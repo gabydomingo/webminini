@@ -8,12 +8,11 @@ import dynamic from 'next/dynamic'
 
 const MapPicker = dynamic(() => import('../../../../components/MapPicker'), { ssr: false })
 
-// ─── TIPO UNIFICADO PARA IMÁGENES VIEJAS Y NUEVAS ───
 type GalleryItem = {
     id: string;
     isExisting: boolean;
-    url: string; // URL pública (existente) o URL temporal (nueva)
-    file?: File; // Solo existirá si es una foto nueva
+    url: string;
+    file?: File;
 }
 
 export default function EditarPropiedad() {
@@ -35,7 +34,6 @@ export default function EditarPropiedad() {
         tipo_propiedad: [], tipo_operacion: [], provincia: [], localidad: []
     })
 
-    // ─── ESTADO UNIFICADO PARA LA GALERÍA ───
     const [gallery, setGallery] = useState<GalleryItem[]>([])
     const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
@@ -65,13 +63,13 @@ export default function EditarPropiedad() {
                         title: propData.title || '', description: propData.description || '', price: propData.price ? propData.price.toString() : '',
                         currency: propData.currency || 'USD', operation_type: propData.operation_type || groupedOptions.tipo_operacion?.[0] || '',
                         property_type: propData.property_type || groupedOptions.tipo_propiedad?.[0] || '', provincia: propData.provincia || groupedOptions.provincia?.[0] || '',
-                        localidad: propData.localidad || groupedOptions.localidad?.[0] || '', location: propData.location || '',
+                        localidad: propData.localidad || groupedOptions.localidad?.[0] || '',
+                        location: propData.location || '', // Ahora location trae solo la calle (si fue cargada con el nuevo código)
                         latitude: propData.latitude ? propData.latitude.toString() : '', longitude: propData.longitude ? propData.longitude.toString() : '',
                         bedrooms: propData.bedrooms ? propData.bedrooms.toString() : '0', bathrooms: propData.bathrooms ? propData.bathrooms.toString() : '0',
                         environments: propData.environments ? propData.environments.toString() : '0', status: propData.status || 'disponible', features: parsedFeatures
                     })
 
-                    // Cargar fotos viejas en el estado unificado
                     if (Array.isArray(propData.images)) {
                         const existingImgs = propData.images.map((url: string, i: number) => ({
                             id: `old-${i}`,
@@ -100,7 +98,6 @@ export default function EditarPropiedad() {
         }
     }
 
-    // ─── AGREGAR FOTOS NUEVAS ───
     const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const filesArray = Array.from(e.target.files)
@@ -110,7 +107,6 @@ export default function EditarPropiedad() {
                 url: URL.createObjectURL(file),
                 file: file
             }))
-            // Agregamos las fotos nuevas al final de la galería
             setGallery(prev => [...prev, ...newImgs])
         }
     }
@@ -119,7 +115,6 @@ export default function EditarPropiedad() {
         setGallery(prev => prev.filter(img => img.id !== idToRemove))
     }
 
-    // ─── DRAG AND DROP ───
     const handleDragStart = (index: number) => setDraggedIdx(index)
     const handleDragOver = (e: React.DragEvent) => e.preventDefault()
     const handleDrop = (index: number) => {
@@ -139,13 +134,10 @@ export default function EditarPropiedad() {
         try {
             const finalUrls: string[] = []
 
-            // Iteramos sobre el orden final de la galería
             for (const item of gallery) {
                 if (item.isExisting) {
-                    // Si ya existía, simplemente conservamos su URL
                     finalUrls.push(item.url)
                 } else if (item.file) {
-                    // Si es nueva, la subimos a Supabase y guardamos su nueva URL pública
                     const fileExt = item.file.name.split('.').pop()
                     const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
                     const { error: uploadError } = await supabase.storage.from('propiedades').upload(fileName, item.file)
@@ -156,15 +148,26 @@ export default function EditarPropiedad() {
             }
 
             const featuresArray = formData.features.split(',').map(f => f.trim()).filter(f => f !== '')
-            const fullLocation = `${formData.location}, ${formData.localidad}, ${formData.provincia}`
 
+            // CORRECCIÓN ACÁ TAMBIÉN: Guardamos en 'location' solo la data que ingresó el admin en ese input.
             const { error: dbError } = await supabase.from('properties').update({
-                title: formData.title, description: formData.description, price: formData.price ? Number(formData.price) : null,
-                currency: formData.currency, operation_type: formData.operation_type, property_type: formData.property_type,
-                provincia: formData.provincia, localidad: formData.localidad, location: fullLocation,
-                latitude: formData.latitude ? parseFloat(formData.latitude) : null, longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-                bedrooms: Number(formData.bedrooms), bathrooms: Number(formData.bathrooms), environments: Number(formData.environments),
-                status: formData.status, features: featuresArray, images: finalUrls
+                title: formData.title,
+                description: formData.description,
+                price: formData.price ? Number(formData.price) : null,
+                currency: formData.currency,
+                operation_type: formData.operation_type,
+                property_type: formData.property_type,
+                provincia: formData.provincia,
+                localidad: formData.localidad,
+                location: formData.location.trim(),
+                latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+                longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+                bedrooms: Number(formData.bedrooms),
+                bathrooms: Number(formData.bathrooms),
+                environments: Number(formData.environments),
+                status: formData.status,
+                features: featuresArray,
+                images: finalUrls
             }).eq('id', propertyId)
 
             if (dbError) throw dbError
@@ -191,7 +194,6 @@ export default function EditarPropiedad() {
 
             <form onSubmit={handleSubmit} className="bg-white shadow-lg border border-gray-200 rounded-sm">
 
-                {/* ── SECCIONES 1, 2 y 3 (Resumidas para ahorrar espacio visual, pegá tu HTML igual al archivo Nueva Propiedad) ── */}
                 <div className="p-8 border-b border-gray-100">
                     <h2 className="text-xl font-semibold text-[#8B1A1A] mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-sm">1</span>Información Básica</h2>
                     <div className="space-y-6">
@@ -267,14 +269,12 @@ export default function EditarPropiedad() {
                                 >
                                     <img src={img.url} alt="Propiedad" className="w-full h-full object-cover pointer-events-none" />
 
-                                    {/* Etiqueta de Portada */}
                                     {index === 0 && (
                                         <div className="absolute top-0 left-0 w-full bg-[#8B1A1A]/90 text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider backdrop-blur-sm">
                                             Portada
                                         </div>
                                     )}
 
-                                    {/* Etiqueta si la foto es "Nueva" */}
                                     {!img.isExisting && (
                                         <div className="absolute bottom-2 left-2 bg-green-600/90 text-white text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">
                                             Nueva

@@ -8,7 +8,6 @@ import dynamic from 'next/dynamic'
 
 const MapPicker = dynamic(() => import('../../../components/MapPicker'), { ssr: false })
 
-// ─── TIPO DE DATO PARA LA GALERÍA ───
 type ImageItem = {
     id: string;
     file: File;
@@ -30,7 +29,6 @@ export default function NuevaPropiedad() {
         tipo_propiedad: [], tipo_operacion: [], provincia: [], localidad: []
     })
 
-    // ─── ESTADO UNIFICADO PARA IMÁGENES ───
     const [images, setImages] = useState<ImageItem[]>([])
     const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
@@ -86,7 +84,6 @@ export default function NuevaPropiedad() {
         setImages(prev => prev.filter(img => img.id !== idToRemove))
     }
 
-    // ─── DRAG AND DROP ───
     const handleDragStart = (index: number) => setDraggedIdx(index)
     const handleDragOver = (e: React.DragEvent) => e.preventDefault()
     const handleDrop = (index: number) => {
@@ -105,7 +102,6 @@ export default function NuevaPropiedad() {
 
         try {
             const imageUrls: string[] = []
-            // Subimos respetando el orden del array
             for (const img of images) {
                 const fileExt = img.file.name.split('.').pop()
                 const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
@@ -116,15 +112,26 @@ export default function NuevaPropiedad() {
             }
 
             const featuresArray = formData.features.split(',').map(f => f.trim()).filter(f => f !== '')
-            const fullLocation = `${formData.location}, ${formData.localidad}, ${formData.provincia}`
 
+            // CORRECCIÓN ACÁ: Ya no concatenamos. Guardamos solo la calle en location.
             const { error: dbError } = await supabase.from('properties').insert([{
-                title: formData.title, description: formData.description, price: formData.price ? Number(formData.price) : null,
-                currency: formData.currency, operation_type: formData.operation_type, property_type: formData.property_type,
-                provincia: formData.provincia, localidad: formData.localidad, location: fullLocation,
-                latitude: formData.latitude ? parseFloat(formData.latitude) : null, longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-                bedrooms: Number(formData.bedrooms), bathrooms: Number(formData.bathrooms), environments: Number(formData.environments),
-                status: formData.status, features: featuresArray, images: imageUrls
+                title: formData.title,
+                description: formData.description,
+                price: formData.price ? Number(formData.price) : null,
+                currency: formData.currency,
+                operation_type: formData.operation_type,
+                property_type: formData.property_type,
+                provincia: formData.provincia,
+                localidad: formData.localidad,
+                location: formData.location.trim(), // Solo guardamos la calle/altura ingresada
+                latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+                longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+                bedrooms: Number(formData.bedrooms),
+                bathrooms: Number(formData.bathrooms),
+                environments: Number(formData.environments),
+                status: formData.status,
+                features: featuresArray,
+                images: imageUrls
             }])
 
             if (dbError) throw dbError
@@ -150,7 +157,6 @@ export default function NuevaPropiedad() {
 
             <form onSubmit={handleSubmit} className="bg-white shadow-lg border border-gray-200 rounded-sm">
 
-                {/* ── SECCIONES 1, 2 y 3: IGUALES (Resumidas aquí por longitud, copiá tu HTML de siempre de esas partes) ── */}
                 <div className="p-8 border-b border-gray-100">
                     <h2 className="text-xl font-semibold text-[#8B1A1A] mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-sm">1</span>Información Básica</h2>
                     <div className="space-y-6">
@@ -195,7 +201,6 @@ export default function NuevaPropiedad() {
                     </div>
                 </div>
 
-                {/* ── SECCIÓN 4: Multimedia con DRAG & DROP ── */}
                 <div className="p-8">
                     <h2 className="text-xl font-semibold text-[#8B1A1A] mb-6 flex items-center gap-2">
                         <span className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-sm">4</span>
@@ -226,7 +231,6 @@ export default function NuevaPropiedad() {
                                 >
                                     <img src={img.preview} alt="Preview" className="w-full h-full object-cover pointer-events-none" />
 
-                                    {/* Etiqueta de Portada */}
                                     {index === 0 && (
                                         <div className="absolute top-0 left-0 w-full bg-[#8B1A1A]/90 text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider backdrop-blur-sm">
                                             Portada

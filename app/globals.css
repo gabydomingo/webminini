@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 :root {
+  /* ─── FONDO DE LA PÁGINA (LIGHT MODE) ─── */
+  /* Acá podés jugar con el blanco puro (#ffffff) o tonos muy suaves (#fafafa) */
   --background: #ffffff;
   --foreground: #171717;
+  /* Texto principal oscuro */
+
+  /* ─── PALETA MININI ─── */
+  /* Rojo principal */
+  --primary: #D90000;
+  --primary-hover: #b30000;
+
+  /* Dorado/Arena secundario */
+  --secondary: #BE9B5F;
+  --secondary-hover: #a38450;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* ─── MODO OSCURO (PREPARADO PARA EL FUTURO) ─── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    /* Cuando actives el modo oscuro, la página tomará este fondo */
+    --background: #121212;
     --foreground: #ededed;
+    /* Texto clarito para que contraste */
+
+    /* Mantenemos el rojo y dorado, pero podés aclararlos apenas si querés que resalten más en negro */
+    --primary: #D90000;
+    --primary-hover: #ff1a1a;
+
+    --secondary: #BE9B5F;
+    --secondary-hover: #d1b17a;
   }
 }
 
+/* ─── INTEGRACIÓN CON TAILWIND V4 ─── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+
+  /* Conectamos las fuentes locales */
+  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-aleo), ui-serif, Georgia, serif;
+}
+
+/* Aplicamos el fondo y color de texto a todo el body por defecto */
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
