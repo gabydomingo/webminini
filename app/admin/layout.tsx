@@ -1,4 +1,3 @@
-// src/app/admin/layout.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -29,62 +28,61 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/admin/login')
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">Verificando credenciales...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500 font-sans">Verificando credenciales...</div>
 
   if (pathname === '/admin/login') {
     return <>{children}</>
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50 font-sans">
 
+      {/* SIDEBAR */}
       <aside className="w-64 bg-gray-900 text-white flex flex-col shadow-xl shrink-0">
         <div className="p-6 border-b border-gray-800">
-          <h2 className="text-2xl font-bold tracking-tight">Admin<span className="text-red-500">Minini</span></h2>
-          <p className="text-xs text-gray-400 mt-1">Backoffice de Gestión</p>
+          <h2 className="text-2xl font-bold tracking-tight font-serif">Admin<span className="text-primary">Minini</span></h2>
+          <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">Backoffice</p>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4 px-4">Principal</div>
+          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-4 px-4">Panel</div>
           <Link
             href="/admin"
-            className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+            className={`block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm ${pathname === '/admin' ? 'bg-primary text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             📊 Dashboard
           </Link>
-
-          {/* ── NUEVO ENLACE A CONSULTAS ── */}
           <Link
             href="/admin/consultas"
-            className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin/consultas' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+            className={`block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm ${pathname === '/admin/consultas' ? 'bg-primary text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             💬 Consultas Web
           </Link>
 
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6 px-4">Inmobiliaria</div>
+          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 px-4">Inmobiliaria</div>
           <Link
             href="/admin/propiedades"
-            className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin/propiedades' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+            className={`block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm ${pathname === '/admin/propiedades' ? 'bg-primary text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             🏠 Mis Propiedades
           </Link>
           <Link
             href="/admin/propiedades/nueva"
-            className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin/propiedades/nueva' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+            className={`block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm ${pathname === '/admin/propiedades/nueva' ? 'bg-primary text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             ➕ Cargar Nueva
           </Link>
 
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6 px-4">Configuración</div>
+          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 px-4">Configuración</div>
           <Link
             href="/admin/opciones"
-            className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin/opciones' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+            className={`block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm ${pathname === '/admin/opciones' ? 'bg-primary text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             📋 Listas y Categorías
           </Link>
           <Link
             href="/admin/redes"
-            className={`block px-4 py-2.5 rounded-lg transition ${pathname === '/admin/redes' ? 'bg-red-900 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+            className={`block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm ${pathname === '/admin/redes' ? 'bg-primary text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}
           >
             📱 Videos Home
           </Link>
@@ -93,13 +91,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-4 border-t border-gray-800">
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-gray-400 hover:text-white hover:bg-red-900/50 rounded-lg transition-colors"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             Cerrar Sesión
           </button>
         </div>
       </aside>
 
+      {/* CONTENIDO PRINCIPAL */}
       <main className="flex-1 overflow-y-auto p-8">
         <div className="max-w-6xl mx-auto">
           {children}

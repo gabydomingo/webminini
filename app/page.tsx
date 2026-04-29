@@ -4,104 +4,14 @@ import { supabase } from "./lib/supabase";
 import SearchBar from "./components/SearchBar";
 import Header from "./components/Header";
 import SocialSection from "./components/SocialSection";
-import { Property } from "./types";
+import PropertyCard from "./components/PropertyCard"; // ¡Lo importamos!
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function formatPrice(price: number | null, currency: string) {
-  if (!price) return "Consultar valor";
-  const symbol = currency === "USD" ? "U$S" : "$";
-  return `${symbol} ${price.toLocaleString("es-AR")}`;
-}
-
-function getStatusColor(op: string) {
-  const opLower = op?.toLowerCase() || '';
-  if (opLower.includes("alquiler")) return "bg-green-700 text-white";
-  if (opLower.includes("pozo")) return "bg-blue-800 text-white";
-  return "bg-primary text-white";
-}
-
-// ─── PropertyCard Component ───────────────────────────────────────────────────
-function PropertyCard({ property }: { property: Property }) {
-  const img = property.images?.[0] ?? null;
-
-  return (
-    <Link href={`/propiedades/${property.id}`} className="group block">
-      <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
-        <div className="relative h-52 overflow-hidden">
-          {img ? (
-            <Image
-              src={img}
-              alt={property.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
-              </svg>
-            </div>
-          )}
-
-          <span className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${getStatusColor(property.operation_type)}`}>
-            {property.operation_type}
-          </span>
-
-          <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-sm font-bold px-3 py-1.5 rounded-lg">
-            {formatPrice(property.price, property.currency)}
-          </div>
-        </div>
-
-        <div className="p-4">
-          {/* Aquí aplicamos font-serif (Aleo) y hover:text-primary */}
-          <h3 className="font-serif font-bold text-foreground text-base leading-snug mb-1 group-hover:text-primary transition-colors line-clamp-2">
-            {property.title}
-          </h3>
-          <p className="text-xs text-foreground/60 flex items-center gap-1 mb-3">
-            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-            </svg>
-            {property.location || 'Ubicación a consultar'}
-          </p>
-
-          <div className="flex items-center gap-4 text-xs text-foreground/70 border-t border-gray-100 pt-3">
-            {property.bedrooms > 0 && (
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 9V19M21 9V19M3 13H21M5 9V7a2 2 0 012-2h10a2 2 0 012 2v2" />
-                </svg>
-                {property.bedrooms}
-              </span>
-            )}
-            {property.bathrooms > 0 && (
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 12h16M4 12V8a4 4 0 018 0M4 12v6h16v-6" />
-                </svg>
-                {property.bathrooms}
-              </span>
-            )}
-            {property.environments > 0 && (
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 3h18v18H3z" />
-                </svg>
-                {property.environments} amb.
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// ─── Main Page Component (SSR) ────────────────────────────────────────────────
 export default async function HomePage() {
   const { data } = await supabase
     .from("properties")
     .select("*")
     .eq("status", "disponible")
+    .eq("is_featured", true)
     .order("created_at", { ascending: false })
     .limit(6);
 
@@ -158,7 +68,6 @@ export default async function HomePage() {
         </section>
 
         {/* ── FEATURED PROPERTIES ──────────────────────────────────────────── */}
-        {/* Cambiamos el color harcodeado por bg-background */}
         <section className="bg-background pt-24 pb-20 px-6 lg:px-10">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-end justify-between mb-8">
@@ -170,7 +79,7 @@ export default async function HomePage() {
               </div>
               <Link
                 href="/propiedades"
-                className="flex items-center gap-2 text-primary text-sm font-semibold uppercase tracking-widest hover:gap-3 transition-all duration-200"
+                className="flex items-center gap-2 text-primary text-sm font-semibold uppercase tracking-widest hover:gap-3 transition-all duration-200 font-sans"
               >
                 Ver más
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,11 +89,11 @@ export default async function HomePage() {
             </div>
 
             {properties.length === 0 ? (
-              <div className="text-center py-20 text-foreground/60">
-                <p className="text-lg">No hay propiedades disponibles en este momento.</p>
+              <div className="text-center py-20 text-foreground/60 font-sans">
+                <p className="text-lg">No hay propiedades destacadas en este momento.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
                 {properties.map((p) => (
                   <PropertyCard key={p.id} property={p} />
                 ))}

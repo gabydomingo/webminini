@@ -12,7 +12,7 @@ import dynamic from 'next/dynamic';
 // ─── Componente del Mapa ──────────────────────────────────────────────────────
 const MapViewer = dynamic(() => import('../../components/MapViewer'), {
     ssr: false,
-    loading: () => <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center text-gray-400 font-medium">Cargando mapa...</div>
+    loading: () => <div className="w-full h-full bg-input animate-pulse flex items-center justify-center text-foreground/40 font-medium">Cargando mapa...</div>
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -22,6 +22,13 @@ function formatPrice(price: number | null, currency: string) {
     return `${symbol} ${price.toLocaleString("es-AR")}`;
 }
 
+function getStatusColor(op: string) {
+    const opLower = op?.toLowerCase() || '';
+    if (opLower.includes("alquiler")) return "bg-green-700 text-white";
+    if (opLower.includes("pozo")) return "bg-blue-800 text-white";
+    return "bg-primary text-white";
+}
+
 // ─── Mini Tarjeta para Propiedades Similares ─────────────────────────────────
 function MiniPropertyCard({ property }: { property: Property }) {
     const imgArray = Array.isArray(property.images) ? property.images : [];
@@ -29,12 +36,13 @@ function MiniPropertyCard({ property }: { property: Property }) {
 
     return (
         <Link href={`/propiedades/${property.id}`} className="group block shrink-0 w-64 md:w-72">
-            <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all">
+            {/* Adaptado al modo oscuro: bg-card border-border-card */}
+            <div className="bg-card rounded-xl overflow-hidden shadow-sm border border-border-card hover:shadow-md transition-all">
                 <div className="relative h-40 overflow-hidden">
                     {img ? (
                         <Image src={img} alt={property.title} fill className="object-cover group-hover:scale-105 transition-transform" />
                     ) : (
-                        <div className="w-full h-full bg-gray-200" />
+                        <div className="w-full h-full bg-input" />
                     )}
                     <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded font-sans">
                         {formatPrice(property.price, property.currency)}
@@ -56,16 +64,13 @@ export default function PropertyDetailPage() {
     const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Estados para el formulario de contacto
     const [formData, setFormData] = useState({ name: '', phone: '', email: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-    // Estados para el Visor de Fotos (Lightbox)
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-    // Refs
     const sideGalleryRef = useRef<HTMLDivElement>(null);
     const similarCarouselRef = useRef<HTMLDivElement>(null);
 
@@ -139,7 +144,6 @@ export default function PropertyDetailPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // Funciones del Lightbox
     const openLightbox = (index: number) => {
         setCurrentImageIndex(index);
         setIsLightboxOpen(true);
@@ -157,7 +161,6 @@ export default function PropertyDetailPage() {
         setCurrentImageIndex((prev) => (prev === 0 ? totalImages - 1 : prev - 1));
     };
 
-    // ─── Funciones para scrollear la galería lateral ───
     const scrollSideGallery = (direction: 'up' | 'down') => {
         if (sideGalleryRef.current) {
             const scrollAmount = direction === 'up' ? -250 : 250;
@@ -177,7 +180,7 @@ export default function PropertyDetailPage() {
             <div className="min-h-screen bg-background flex flex-col pt-28 transition-colors duration-300">
                 <Header />
                 <div className="flex-1 flex items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+                    <div className="w-12 h-12 border-4 border-input border-t-primary rounded-full animate-spin"></div>
                 </div>
             </div>
         );
@@ -219,6 +222,7 @@ export default function PropertyDetailPage() {
     const waMessage = encodeURIComponent(`Hola! Estoy interesado en esta propiedad:\n\n${property.title} (${property.operation_type})\n${currentUrl}`);
 
     return (
+        // CAMBIO PRINCIPAL ACÁ: Usamos bg-background
         <div className="bg-background min-h-screen pb-20 pt-28 transition-colors duration-300">
             <Header />
 
@@ -231,11 +235,11 @@ export default function PropertyDetailPage() {
                     <span className="text-foreground/90">{property.operation_type} en {property.localidad}</span>
                 </div>
 
-                {/* ── GALERÍA DE IMÁGENES (Minimalista con Scroll Vertical) ── */}
+                {/* ── GALERÍA DE IMÁGENES ── */}
                 {images.length > 0 && mainImage ? (
                     <div className="relative mb-10 h-[50vh] md:h-[60vh] lg:h-[70vh] flex gap-2">
 
-                        {/* Imagen Principal (Izquierda) */}
+                        {/* Imagen Principal */}
                         <div
                             className="relative flex-[2] md:flex-[3] h-full rounded-2xl overflow-hidden cursor-pointer group"
                             onClick={() => openLightbox(0)}
@@ -253,19 +257,16 @@ export default function PropertyDetailPage() {
                         {/* Columna Lateral (Fotos secundarias) */}
                         {sideImages.length > 0 && (
                             <div className="relative flex-1 hidden sm:flex flex-col h-full overflow-hidden">
-
-                                {/* Botón Arriba */}
                                 {sideImages.length > 2 && (
                                     <button
                                         onClick={() => scrollSideGallery('up')}
-                                        className="absolute top-2 left-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur text-gray-800 rounded-full flex items-center justify-center shadow-md hover:bg-white hover:text-primary transition-all opacity-0 hover:opacity-100 group-hover:opacity-100 focus:opacity-100"
+                                        className="absolute top-2 left-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-card/90 backdrop-blur text-foreground rounded-full flex items-center justify-center shadow-md hover:text-primary transition-all opacity-0 hover:opacity-100 group-hover:opacity-100 focus:opacity-100 border border-border-card"
                                         style={{ opacity: 1 }}
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7"></path></svg>
                                     </button>
                                 )}
 
-                                {/* Contenedor con Scroll Vertical */}
                                 <div
                                     ref={sideGalleryRef}
                                     className="flex flex-col gap-2 h-full overflow-y-auto snap-y snap-mandatory hide-scroll pb-12"
@@ -290,11 +291,10 @@ export default function PropertyDetailPage() {
                                     ))}
                                 </div>
 
-                                {/* Botón Abajo */}
                                 {sideImages.length > 2 && (
                                     <button
                                         onClick={() => scrollSideGallery('down')}
-                                        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur text-gray-800 rounded-full flex items-center justify-center shadow-md hover:bg-white hover:text-primary transition-all"
+                                        className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-card/90 backdrop-blur text-foreground rounded-full flex items-center justify-center shadow-md hover:text-primary transition-all border border-border-card"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
                                     </button>
@@ -304,15 +304,15 @@ export default function PropertyDetailPage() {
 
                         <button
                             onClick={() => openLightbox(0)}
-                            className="absolute bottom-6 right-6 sm:right-[calc(25%+1.5rem)] md:right-[calc(25%+1.5rem)] bg-white/95 backdrop-blur-sm text-gray-900 px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg hover:bg-white hover:scale-105 transition-all border border-gray-200 z-20 flex items-center gap-2 font-sans"
+                            className="absolute bottom-6 right-6 sm:right-[calc(25%+1.5rem)] md:right-[calc(25%+1.5rem)] bg-card/95 backdrop-blur-sm text-foreground px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg hover:scale-105 transition-all border border-border-card z-20 flex items-center gap-2 font-sans"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                             Ver {images.length} fotos
                         </button>
                     </div>
                 ) : (
-                    <div className="h-[40vh] bg-gray-200 rounded-2xl mb-10 flex items-center justify-center">
-                        <span className="text-gray-400 font-bold font-sans">Sin imágenes</span>
+                    <div className="h-[40vh] bg-input rounded-2xl mb-10 flex items-center justify-center">
+                        <span className="text-foreground/40 font-bold font-sans">Sin imágenes</span>
                     </div>
                 )}
 
@@ -323,10 +323,10 @@ export default function PropertyDetailPage() {
                     <div className="flex-1 min-w-0">
 
                         {/* Encabezado: Título y Precio */}
-                        <div className="mb-8 border-b border-gray-200 pb-8">
+                        <div className="mb-8 border-b border-border-card pb-8">
                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                 <div>
-                                    <span className="inline-block px-3 py-1 bg-gray-100 text-foreground/70 text-xs font-bold uppercase tracking-widest rounded-md mb-3 font-sans">
+                                    <span className="inline-block px-3 py-1 bg-input text-foreground/70 text-xs font-bold uppercase tracking-widest rounded-md mb-3 font-sans">
                                         {property.property_type} en {property.operation_type}
                                     </span>
                                     <h1 className="text-3xl md:text-4xl font-bold text-foreground font-serif">
@@ -349,17 +349,17 @@ export default function PropertyDetailPage() {
                             </p>
                         </div>
 
-                        {/* Ficha Resumen (Íconos) */}
-                        <div className="flex flex-wrap gap-4 md:gap-8 mb-10 py-6 px-2 bg-white rounded-xl shadow-sm border border-gray-100 justify-around font-sans">
+                        {/* Ficha Resumen (Íconos) - bg-card */}
+                        <div className="flex flex-wrap gap-4 md:gap-8 mb-10 py-6 px-2 bg-card rounded-xl shadow-sm border border-border-card justify-around font-sans">
 
                             {(property.environments !== undefined && property.environments > 0) && (
                                 <>
                                     <div className="flex flex-col items-center justify-center text-center">
-                                        <svg className="w-7 h-7 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 12h8m0 0v8m0-8V4"></path></svg>
+                                        <svg className="w-7 h-7 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 12h8m0 0v8m0-8V4"></path></svg>
                                         <span className="font-bold text-foreground text-lg">{property.environments}</span>
                                         <span className="text-xs text-foreground/60 uppercase tracking-widest font-semibold mt-1">Ambientes</span>
                                     </div>
-                                    <div className="w-px h-12 bg-gray-200 hidden md:block"></div>
+                                    <div className="w-px h-12 bg-border-card hidden md:block"></div>
                                 </>
                             )}
 
@@ -370,7 +370,7 @@ export default function PropertyDetailPage() {
                                         <span className="font-bold text-foreground text-lg">{property.bedrooms}</span>
                                         <span className="text-xs text-foreground/60 uppercase tracking-widest font-semibold mt-1">Dormitorios</span>
                                     </div>
-                                    <div className="w-px h-12 bg-gray-200 hidden md:block"></div>
+                                    <div className="w-px h-12 bg-border-card hidden md:block"></div>
                                 </>
                             )}
 
@@ -415,12 +415,12 @@ export default function PropertyDetailPage() {
                             <h3 className="text-2xl font-bold text-foreground mb-6 font-serif">
                                 Ubicación
                             </h3>
-                            <div className="w-full h-[450px] bg-gray-200 rounded-xl overflow-hidden border border-gray-300 relative z-0 shadow-sm">
+                            <div className="w-full h-[450px] bg-input rounded-xl overflow-hidden border border-border-card relative z-0 shadow-sm">
                                 {lat && lng ? (
                                     <MapViewer lat={lat} lng={lng} />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-gray-500 font-medium bg-white px-4 py-2 rounded-lg shadow-sm font-sans">Ubicación exacta no especificada</span>
+                                        <span className="text-foreground/50 font-medium bg-card px-4 py-2 rounded-lg shadow-sm font-sans border border-border-card">Ubicación exacta no especificada</span>
                                     </div>
                                 )}
                             </div>
@@ -428,12 +428,12 @@ export default function PropertyDetailPage() {
 
                     </div>
 
-                    {/* ── COLUMNA DERECHA (Sidebar Pegajoso de Contacto) ── */}
+                    {/* ── COLUMNA DERECHA (Sidebar Pegajoso de Contacto) ── bg-card */}
                     <aside className="w-full lg:w-[380px] shrink-0 relative font-sans">
-                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden sticky top-28 z-10">
+                        <div className="bg-card rounded-2xl shadow-xl border border-border-card overflow-hidden sticky top-28 z-10">
 
                             {/* Cabecera del Formulario */}
-                            <div className="bg-gray-50 border-b border-gray-200 p-6 flex items-center gap-4">
+                            <div className="bg-input border-b border-border-card p-6 flex items-center gap-4">
                                 <div className="relative w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 border border-gray-200 shadow-sm flex items-center justify-center">
                                     <Image
                                         src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/2.png"
@@ -451,12 +451,12 @@ export default function PropertyDetailPage() {
                             {/* Formulario */}
                             <div className="p-6">
                                 {submitStatus === 'success' && (
-                                    <div className="mb-4 bg-green-50 border-l-4 border-green-500 p-4 rounded text-sm text-green-800">
+                                    <div className="mb-4 bg-green-500/10 border-l-4 border-green-500 p-4 rounded text-sm text-green-700 dark:text-green-400">
                                         ¡Consulta enviada! Nos pondremos en contacto a la brevedad.
                                     </div>
                                 )}
                                 {submitStatus === 'error' && (
-                                    <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded text-sm text-red-800">
+                                    <div className="mb-4 bg-red-500/10 border-l-4 border-red-500 p-4 rounded text-sm text-red-700 dark:text-red-400">
                                         Hubo un error al enviar el mensaje. Por favor, intentá nuevamente.
                                     </div>
                                 )}
@@ -470,7 +470,7 @@ export default function PropertyDetailPage() {
                                             value={formData.name}
                                             onChange={handleFormChange}
                                             placeholder="Nombre completo *"
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
+                                            className="w-full px-4 py-3 bg-input border border-border-input rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
                                         />
                                     </div>
                                     <div>
@@ -481,7 +481,7 @@ export default function PropertyDetailPage() {
                                             value={formData.phone}
                                             onChange={handleFormChange}
                                             placeholder="Teléfono *"
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
+                                            className="w-full px-4 py-3 bg-input border border-border-input rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
                                         />
                                     </div>
                                     <div>
@@ -492,7 +492,7 @@ export default function PropertyDetailPage() {
                                             value={formData.email}
                                             onChange={handleFormChange}
                                             placeholder="Email *"
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
+                                            className="w-full px-4 py-3 bg-input border border-border-input rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
                                         />
                                     </div>
                                     <div>
@@ -502,7 +502,7 @@ export default function PropertyDetailPage() {
                                             value={formData.message}
                                             onChange={handleFormChange}
                                             rows={4}
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors resize-none"
+                                            className="w-full px-4 py-3 bg-input border border-border-input rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors resize-none"
                                         ></textarea>
                                     </div>
 
@@ -516,16 +516,16 @@ export default function PropertyDetailPage() {
                                 </form>
 
                                 <div className="mt-5 flex items-center gap-4">
-                                    <div className="flex-1 h-px bg-gray-200"></div>
+                                    <div className="flex-1 h-px bg-border-card"></div>
                                     <span className="text-xs text-foreground/40 font-bold uppercase">O mediante</span>
-                                    <div className="flex-1 h-px bg-gray-200"></div>
+                                    <div className="flex-1 h-px bg-border-card"></div>
                                 </div>
 
                                 <a
                                     href={`https://wa.me/${WA_NUMBER}?text=${waMessage}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="mt-5 w-full bg-white border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group"
+                                    className="mt-5 w-full bg-card border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group"
                                 >
                                     <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.87-2.053-.97-.297-.099-.511-.149-.722.149-.209.298-.769.969-.942 1.169-.173.199-.347.223-.644.075-.297-.15-1.255-.462-2.39-1.405-.881-.733-1.476-1.638-1.649-1.937-.173-.298-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.721-1.747-.988-2.392-.264-.625-.533-.541-.722-.553-.178-.011-.383-.013-.594-.013s-.549.074-.833.372c-.284.298-1.089 1.066-1.089 2.597 0 1.531 1.115 3.013 1.272 3.211.149.198 2.191 3.348 5.309 4.698 2.059.89 3.125.962 4.195.801 1.233-.186 3.791-1.546 4.321-3.037.53-1.49.53-2.766.372-3.036z" /></svg>
                                     WhatsApp
@@ -538,7 +538,7 @@ export default function PropertyDetailPage() {
 
                 {/* ── CARRUSEL PROPIEDADES SIMILARES ── */}
                 {similarProperties.length > 0 && (
-                    <div className="pt-10 border-t border-gray-200">
+                    <div className="pt-10 border-t border-border-card">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-2xl font-bold text-foreground font-serif">
                                 Más opciones en {property.localidad}
@@ -546,10 +546,10 @@ export default function PropertyDetailPage() {
 
                             {/* Botones para scrollear el carrusel de similares */}
                             <div className="hidden md:flex gap-2">
-                                <button onClick={() => scrollSimilar('left')} className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-foreground/60 hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                <button onClick={() => scrollSimilar('left')} className="w-10 h-10 rounded-full border border-border-card flex items-center justify-center text-foreground/60 hover:bg-primary hover:text-white hover:border-primary transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                                 </button>
-                                <button onClick={() => scrollSimilar('right')} className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-foreground/60 hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                                <button onClick={() => scrollSimilar('right')} className="w-10 h-10 rounded-full border border-border-card flex items-center justify-center text-foreground/60 hover:bg-primary hover:text-white hover:border-primary transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
                             </div>

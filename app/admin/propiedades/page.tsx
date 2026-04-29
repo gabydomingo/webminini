@@ -14,6 +14,7 @@ interface Property {
     operation_type: string
     status: string
     images: string[]
+    is_featured?: boolean
 }
 
 export default function AdminPropertiesList() {
@@ -23,14 +24,12 @@ export default function AdminPropertiesList() {
     // Estados para búsqueda y paginación
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 10 // Mostramos 10 propiedades por página
+    const itemsPerPage = 10
 
-    // Cargar propiedades al iniciar
     useEffect(() => {
         fetchProperties()
     }, [])
 
-    // Cuando el usuario escribe algo en el buscador, lo devolvemos a la página 1
     useEffect(() => {
         setCurrentPage(1)
     }, [searchTerm])
@@ -39,7 +38,7 @@ export default function AdminPropertiesList() {
         setLoading(true)
         const { data, error } = await supabase
             .from('properties')
-            .select('id, title, location, price, currency, operation_type, status, images')
+            .select('id, title, location, price, currency, operation_type, status, images, is_featured')
             .order('created_at', { ascending: false })
 
         if (error) {
@@ -50,7 +49,50 @@ export default function AdminPropertiesList() {
         setLoading(false)
     }
 
-    // Función para eliminar
+    // ─── LÓGICA: Cambiar Estado en vivo ───
+    const handleStatusChange = async (id: string, newStatus: string) => {
+        setProperties(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p))
+
+        const { error } = await supabase
+            .from('properties')
+            .update({ status: newStatus })
+            .eq('id', id)
+
+        if (error) {
+            alert('Error al actualizar el estado')
+            fetchProperties()
+        }
+    }
+
+    // ─── LÓGICA: Destacar Propiedad con Límite de 6 ───
+    const handleToggleFeatured = async (id: string, currentStatus: boolean = false) => {
+        const newFeaturedStatus = !currentStatus;
+
+        // Si la intención es DESTACARLA (true), verificamos el límite primero
+        if (newFeaturedStatus) {
+            // Contamos cuántas tienen is_featured en true actualmente
+            const currentFeaturedCount = properties.filter(p => p.is_featured).length;
+
+            if (currentFeaturedCount >= 6) {
+                alert('¡Límite alcanzado!\n\nSolo podés tener un máximo de 6 propiedades destacadas al mismo tiempo para mantener el diseño de la portada.\n\nPor favor, quitale la estrella a otra propiedad antes de destacar esta.');
+                return; // Cortamos la función para que no haga el update
+            }
+        }
+
+        // Actualizamos UI instantáneamente
+        setProperties(prev => prev.map(p => p.id === id ? { ...p, is_featured: newFeaturedStatus } : p))
+
+        const { error } = await supabase
+            .from('properties')
+            .update({ is_featured: newFeaturedStatus })
+            .eq('id', id)
+
+        if (error) {
+            alert('Error al destacar la propiedad')
+            fetchProperties() // Revertimos si falla
+        }
+    }
+
     const handleDelete = async (id: string, title: string) => {
         const confirmar = window.confirm(`¿Estás seguro que querés eliminar "${title}"?\nEsta acción no se puede deshacer.`)
 
@@ -69,7 +111,7 @@ export default function AdminPropertiesList() {
         }
     }
 
-    // ─── Lógica de Filtro Avanzado ───
+    // ─── Filtro y Paginación ───
     const filteredProperties = properties.filter(p => {
         const term = searchTerm.toLowerCase()
         return (
@@ -81,26 +123,23 @@ export default function AdminPropertiesList() {
         )
     })
 
-    // ─── Lógica de Paginación ───
     const totalItems = filteredProperties.length
     const totalPages = Math.ceil(totalItems / itemsPerPage)
-
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    // Cortamos el array filtrado para mostrar solo los 10 de la página actual
     const currentItems = filteredProperties.slice(indexOfFirstItem, indexOfLastItem)
 
     return (
-        <div>
+        <div className="font-sans">
             {/* ── Encabezado y Acciones ── */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Mis Propiedades</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 font-serif">Mis Propiedades</h1>
                     <p className="text-gray-500 text-sm mt-1">Gestioná tu catálogo ({properties.length} en total)</p>
                 </div>
                 <Link
                     href="/admin/propiedades/nueva"
-                    className="bg-red-900 hover:bg-red-800 text-white font-semibold py-2.5 px-6 rounded-lg transition shadow-sm flex items-center gap-2"
+                    className="bg-primary hover:bg-primary-hover text-white font-semibold py-2.5 px-6 rounded-lg transition shadow-sm flex items-center gap-2"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
                     Nueva Propiedad
@@ -118,7 +157,7 @@ export default function AdminPropertiesList() {
                     className="w-full focus:outline-none text-gray-700 bg-transparent"
                 />
                 {searchTerm && (
-                    <button onClick={() => setSearchTerm('')} className="text-gray-400 hover:text-red-600 transition">
+                    <button onClick={() => setSearchTerm('')} className="text-gray-400 hover:text-primary transition">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 )}
@@ -133,7 +172,7 @@ export default function AdminPropertiesList() {
                                 <th className="p-4 font-semibold">Foto</th>
                                 <th className="p-4 font-semibold">Info & ID</th>
                                 <th className="p-4 font-semibold">Precio</th>
-                                <th className="p-4 font-semibold">Estado</th>
+                                <th className="p-4 font-semibold">Estado Web</th>
                                 <th className="p-4 font-semibold text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -165,13 +204,30 @@ export default function AdminPropertiesList() {
 
                                         {/* Info principal y ID */}
                                         <td className="p-4">
-                                            <div className="font-semibold text-gray-900 text-sm line-clamp-1" title={property.title}>{property.title}</div>
-                                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                                                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-medium">{property.operation_type}</span>
-                                                <span className="truncate max-w-[150px]" title={property.location}>• {property.location || 'Sin ubicación'}</span>
+                                            <div className="flex items-center gap-2">
+                                                {/* ESTRELLITA DE DESTACADO */}
+                                                <button
+                                                    onClick={() => handleToggleFeatured(property.id, property.is_featured)}
+                                                    className="focus:outline-none shrink-0"
+                                                    title={property.is_featured ? "Quitar de Destacados" : "Destacar en Inicio"}
+                                                >
+                                                    <svg
+                                                        className={`w-5 h-5 transition-colors ${property.is_featured ? 'text-secondary fill-secondary' : 'text-gray-300 hover:text-secondary'}`}
+                                                        viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                                                    >
+                                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                    </svg>
+                                                </button>
+
+                                                <div>
+                                                    <div className="font-semibold text-gray-900 text-sm line-clamp-1" title={property.title}>{property.title}</div>
+                                                    <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-medium">{property.operation_type}</span>
+                                                        <span className="truncate max-w-[150px]" title={property.location}>• {property.location || 'Sin ubicación'}</span>
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-400 mt-1 uppercase font-mono">ID: {property.id.split('-')[0]}</div>
+                                                </div>
                                             </div>
-                                            {/* Agregamos el ID chiquito abajo para que sea fácil de copiar/buscar */}
-                                            <div className="text-[10px] text-gray-400 mt-1 uppercase font-mono">ID: {property.id.split('-')[0]}</div>
                                         </td>
 
                                         {/* Precio */}
@@ -181,21 +237,28 @@ export default function AdminPropertiesList() {
                                             </div>
                                         </td>
 
-                                        {/* Estado */}
+                                        {/* ESTADO EDITABLE */}
                                         <td className="p-4">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase ${property.status?.toLowerCase() === 'disponible'
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-yellow-100 text-yellow-700'
-                                                }`}>
-                                                {property.status || 'Desconocido'}
-                                            </span>
+                                            <select
+                                                value={property.status?.toLowerCase()}
+                                                onChange={(e) => handleStatusChange(property.id, e.target.value)}
+                                                className={`text-xs font-bold uppercase tracking-wider rounded-full px-2 py-1 outline-none cursor-pointer border ${property.status?.toLowerCase() === 'disponible' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                        property.status?.toLowerCase() === 'oculto' ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                                                            'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                                    }`}
+                                            >
+                                                <option value="disponible">Disponible</option>
+                                                <option value="reservado">Reservado</option>
+                                                <option value="vendido">Vendido / Alq.</option>
+                                                <option value="oculto">Oculto</option>
+                                            </select>
                                         </td>
 
                                         {/* Acciones */}
                                         <td className="p-4 text-right space-x-2 whitespace-nowrap">
                                             <Link
                                                 href={`/admin/propiedades/editar/${property.id}`}
-                                                className="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 hover:text-red-900 transition"
+                                                className="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition"
                                             >
                                                 Editar
                                             </Link>

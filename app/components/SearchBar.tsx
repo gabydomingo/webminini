@@ -50,7 +50,7 @@ export default function SearchBar() {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-2xl px-6 py-5 flex flex-col md:flex-row items-end gap-4 border border-gray-100">
+        <div className="bg-card border border-border-card rounded-xl shadow-2xl px-6 py-5 flex flex-col md:flex-row items-end gap-4 transition-colors duration-300">
 
             {/* 1. Búsqueda libre (Palabra Clave) */}
             <div className="flex-1 min-w-0">
@@ -67,7 +67,7 @@ export default function SearchBar() {
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                        className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition font-sans bg-white"
+                        className="w-full pl-9 pr-3 py-2.5 bg-input border border-border-input rounded-lg text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary transition-colors font-sans"
                     />
                 </div>
             </div>
@@ -80,7 +80,7 @@ export default function SearchBar() {
                 <select
                     value={operation}
                     onChange={(e) => setOperation(e.target.value)}
-                    className="w-full py-2.5 pl-3 pr-8 border border-gray-200 rounded-lg text-sm text-foreground bg-white focus:outline-none focus:border-primary transition appearance-none cursor-pointer font-sans"
+                    className="w-full py-2.5 pl-3 pr-8 bg-input border border-border-input rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer font-sans"
                 >
                     <option value="">Todas</option>
                     {options.tipo_operacion?.map((op) => (
@@ -100,7 +100,7 @@ export default function SearchBar() {
                 <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full py-2.5 pl-3 pr-8 border border-gray-200 rounded-lg text-sm text-foreground bg-white focus:outline-none focus:border-primary transition appearance-none cursor-pointer font-sans"
+                    className="w-full py-2.5 pl-3 pr-8 bg-input border border-border-input rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer font-sans"
                 >
                     <option value="">Todos</option>
                     {options.tipo_propiedad?.map((t) => (
@@ -120,7 +120,7 @@ export default function SearchBar() {
                 <select
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full py-2.5 pl-3 pr-8 border border-gray-200 rounded-lg text-sm text-foreground bg-white focus:outline-none focus:border-primary transition appearance-none cursor-pointer font-sans"
+                    className="w-full py-2.5 pl-3 pr-8 bg-input border border-border-input rounded-lg text-sm text-foreground focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer font-sans"
                 >
                     <option value="">Cualquiera</option>
                     {options.localidad?.map((l) => (
