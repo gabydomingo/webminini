@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { supabase } from "../lib/supabase";
 import Header from "../components/Header";
-import PropertyCard from "../components/PropertyCard"; // ¡Lo importamos!
+import PropertyCard from "../components/PropertyCard";
 import { Property } from "../types";
 import { useSearchParams } from "next/navigation";
 
@@ -19,7 +19,6 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
 
     const getPages = () => {
         if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
-
         if (currentPage <= 3) return [1, 2, 3, '...', totalPages];
         if (currentPage >= totalPages - 2) return [1, '...', totalPages - 2, totalPages - 1, totalPages];
         return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
@@ -71,8 +70,8 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
     );
 }
 
-// ─── Página Principal ─────────────────────────────────────────────────────────
-export default function PropiedadesPage() {
+// ─── Componente de Contenido (Con lógica de SearchParams) ──────────────────────
+function PropiedadesContent() {
     const searchParams = useSearchParams();
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
@@ -182,212 +181,217 @@ export default function PropiedadesPage() {
     };
 
     return (
-        <div className="bg-background min-h-screen pb-20 pt-28 transition-colors duration-300">
-            <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col lg:flex-row gap-8">
+            {/* ── SIDEBAR FILTROS ── */}
+            <aside className="w-full lg:w-[320px] shrink-0">
+                <div className="bg-card rounded-xl shadow-sm border border-border-card p-6 sticky top-24 font-sans transition-colors duration-300">
+                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-card">
+                        <h3 className="font-bold text-foreground font-serif text-xl">Filtros</h3>
+                        {(searchQuery || ambientesSelected.length > 0 || minPrice || maxPrice || propType || loc || opType !== '') && (
+                            <button
+                                onClick={() => { setSearchQuery(''); setAmbientesSelected([]); setMinPrice(''); setMaxPrice(''); setPropType(''); setLoc(''); setOpType(''); resetPage(); }}
+                                className="text-xs text-primary hover:underline font-bold"
+                            >
+                                Limpiar
+                            </button>
+                        )}
+                    </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col lg:flex-row gap-8">
-
-                {/* ── SIDEBAR FILTROS ── */}
-                <aside className="w-full lg:w-[320px] shrink-0">
-                    {/* USAMOS LAS VARIABLES CSS bg-card y border-border-card */}
-                    <div className="bg-card rounded-xl shadow-sm border border-border-card p-6 sticky top-24 font-sans transition-colors duration-300">
-
-                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-card">
-                            <h3 className="font-bold text-foreground font-serif text-xl">
-                                Filtros
-                            </h3>
-                            {(searchQuery || ambientesSelected.length > 0 || minPrice || maxPrice || propType || loc || opType !== '') && (
-                                <button
-                                    onClick={() => { setSearchQuery(''); setAmbientesSelected([]); setMinPrice(''); setMaxPrice(''); setPropType(''); setLoc(''); setOpType(''); resetPage(); }}
-                                    className="text-xs text-primary hover:underline font-bold"
-                                >
-                                    Limpiar
-                                </button>
-                            )}
+                    <div className="space-y-8">
+                        {/* Buscador Global */}
+                        <div>
+                            <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Buscar</h4>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-foreground/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: Depto con cochera..."
+                                    value={searchQuery}
+                                    onChange={(e) => { setSearchQuery(e.target.value); resetPage(); }}
+                                    className="w-full pl-10 pr-4 py-3 bg-input border border-border-input text-foreground font-medium rounded-lg outline-none focus:border-primary transition-colors"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-8">
+                        {/* Operación */}
+                        <div>
+                            <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Operación</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {options.tipo_operacion?.map((op, idx) => (
+                                    <button
+                                        key={`op-${idx}`}
+                                        className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === op ? 'bg-primary text-white shadow-sm' : 'bg-input text-foreground/70 hover:bg-input/80'}`}
+                                        onClick={() => { setOpType(op); resetPage(); }}
+                                    >
+                                        {op}
+                                    </button>
+                                ))}
+                                <button
+                                    className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === '' ? 'bg-foreground text-background shadow-sm' : 'bg-input text-foreground/70 hover:bg-input/80'}`}
+                                    onClick={() => { setOpType(''); resetPage(); }}
+                                >
+                                    Todas
+                                </button>
+                            </div>
+                        </div>
 
-                            {/* 0. Buscador Global */}
-                            <div>
-                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Buscar</h4>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-foreground/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </div>
+                        {/* Tipo de Propiedad */}
+                        <div>
+                            <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Tipo de Propiedad</h4>
+                            <div className="relative">
+                                <select
+                                    className="w-full bg-input border border-border-input text-foreground font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-primary transition-colors"
+                                    value={propType}
+                                    onChange={e => { setPropType(e.target.value); resetPage(); }}
+                                >
+                                    <option value="">Cualquier tipo</option>
+                                    {options.tipo_propiedad?.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Ubicación */}
+                        <div>
+                            <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Localidad</h4>
+                            <div className="relative">
+                                <select
+                                    className="w-full bg-input border border-border-input text-foreground font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-primary transition-colors"
+                                    value={loc}
+                                    onChange={e => { setLoc(e.target.value); resetPage(); }}
+                                >
+                                    <option value="">Todas las localidades</option>
+                                    {options.localidad?.map(l => <option key={l} value={l}>{l}</option>)}
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Ambientes */}
+                        <div>
+                            <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Ambientes</h4>
+                            <div className="grid grid-cols-4 gap-2">
+                                {['1', '2', '3', '4+'].map((amb, idx) => {
+                                    const isSelected = ambientesSelected.includes(amb);
+                                    return (
+                                        <button
+                                            key={`amb-${idx}`}
+                                            onClick={() => handleAmbienteToggle(amb)}
+                                            className={`py-2 px-1 text-center font-bold text-sm rounded-lg border transition-all duration-200 ${isSelected
+                                                ? 'bg-primary/10 border-primary text-primary'
+                                                : 'bg-card border-border-card text-foreground/60 hover:bg-input'
+                                                }`}
+                                        >
+                                            {amb}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Precio */}
+                        <div>
+                            <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Precio (U$S)</h4>
+                            <div className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 font-medium">$</span>
                                     <input
-                                        type="text"
-                                        placeholder="Ej: Depto con cochera..."
-                                        value={searchQuery}
-                                        onChange={(e) => { setSearchQuery(e.target.value); resetPage(); }}
-                                        // USAMOS bg-input y border-border-input
-                                        className="w-full pl-10 pr-4 py-3 bg-input border border-border-input text-foreground font-medium rounded-lg outline-none focus:border-primary transition-colors"
+                                        type="number"
+                                        placeholder="Mínimo"
+                                        value={minPrice}
+                                        onChange={e => { setMinPrice(e.target.value); resetPage(); }}
+                                        className="w-full pl-7 pr-2 py-2.5 bg-input border border-border-input rounded-lg focus:border-primary outline-none text-sm font-medium transition-colors text-foreground"
+                                    />
+                                </div>
+                                <span className="text-foreground/30 font-bold">-</span>
+                                <div className="relative flex-1">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 font-medium">$</span>
+                                    <input
+                                        type="number"
+                                        placeholder="Máximo"
+                                        value={maxPrice}
+                                        onChange={e => { setMaxPrice(e.target.value); resetPage(); }}
+                                        className="w-full pl-7 pr-2 py-2.5 bg-input border border-border-input rounded-lg focus:border-primary outline-none text-sm font-medium transition-colors text-foreground"
                                     />
                                 </div>
                             </div>
-
-                            {/* 1. Operación */}
-                            <div>
-                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Operación</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {options.tipo_operacion?.map((op, idx) => (
-                                        <button
-                                            key={`op-${idx}`}
-                                            className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === op ? 'bg-primary text-white shadow-sm' : 'bg-input text-foreground/70 hover:bg-input/80'}`}
-                                            onClick={() => { setOpType(op); resetPage(); }}
-                                        >
-                                            {op}
-                                        </button>
-                                    ))}
-                                    <button
-                                        className={`flex-1 min-w-[30%] py-2 px-2 rounded-md font-bold text-sm transition-all duration-200 text-center ${opType === '' ? 'bg-foreground text-background shadow-sm' : 'bg-input text-foreground/70 hover:bg-input/80'}`}
-                                        onClick={() => { setOpType(''); resetPage(); }}
-                                    >
-                                        Todas
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* 2. Tipo de Propiedad */}
-                            <div>
-                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Tipo de Propiedad</h4>
-                                <div className="relative">
-                                    <select
-                                        className="w-full bg-input border border-border-input text-foreground font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-primary transition-colors"
-                                        value={propType}
-                                        onChange={e => { setPropType(e.target.value); resetPage(); }}
-                                    >
-                                        <option value="">Cualquier tipo</option>
-                                        {options.tipo_propiedad?.map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 3. Ubicación */}
-                            <div>
-                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Localidad</h4>
-                                <div className="relative">
-                                    <select
-                                        className="w-full bg-input border border-border-input text-foreground font-medium py-3 px-4 rounded-lg appearance-none outline-none focus:border-primary transition-colors"
-                                        value={loc}
-                                        onChange={e => { setLoc(e.target.value); resetPage(); }}
-                                    >
-                                        <option value="">Todas las localidades</option>
-                                        {options.localidad?.map(l => <option key={l} value={l}>{l}</option>)}
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 4. Ambientes */}
-                            <div>
-                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Ambientes</h4>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {['1', '2', '3', '4+'].map((amb, idx) => {
-                                        const isSelected = ambientesSelected.includes(amb);
-                                        return (
-                                            <button
-                                                key={`amb-${idx}`}
-                                                onClick={() => handleAmbienteToggle(amb)}
-                                                className={`py-2 px-1 text-center font-bold text-sm rounded-lg border transition-all duration-200 ${isSelected
-                                                    ? 'bg-primary/10 border-primary text-primary'
-                                                    : 'bg-card border-border-card text-foreground/60 hover:bg-input'
-                                                    }`}
-                                            >
-                                                {amb}
-                                            </button>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* 5. Precio */}
-                            <div>
-                                <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Precio (U$S)</h4>
-                                <div className="flex items-center gap-2">
-                                    <div className="relative flex-1">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 font-medium">$</span>
-                                        <input
-                                            type="number"
-                                            placeholder="Mínimo"
-                                            value={minPrice}
-                                            onChange={e => { setMinPrice(e.target.value); resetPage(); }}
-                                            className="w-full pl-7 pr-2 py-2.5 bg-input border border-border-input rounded-lg focus:border-primary outline-none text-sm font-medium transition-colors text-foreground"
-                                        />
-                                    </div>
-                                    <span className="text-foreground/30 font-bold">-</span>
-                                    <div className="relative flex-1">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 font-medium">$</span>
-                                        <input
-                                            type="number"
-                                            placeholder="Máximo"
-                                            value={maxPrice}
-                                            onChange={e => { setMaxPrice(e.target.value); resetPage(); }}
-                                            className="w-full pl-7 pr-2 py-2.5 bg-input border border-border-input rounded-lg focus:border-primary outline-none text-sm font-medium transition-colors text-foreground"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
-                </aside>
-
-                {/* ── GRILLA DE PROPIEDADES ── */}
-                <div className="flex-1 flex flex-col min-h-[600px] font-sans">
-                    <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-b border-border-card pb-4">
-                        <h2 className="text-2xl md:text-3xl font-bold text-foreground font-serif">
-                            {loading ? "Buscando..." : `${filteredProperties.length} Propiedades`}
-                        </h2>
-
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold text-foreground/50 uppercase tracking-wider hidden sm:inline">Ordenar por:</span>
-                            <select
-                                className="bg-card border border-border-card text-foreground/80 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 outline-none font-medium cursor-pointer shadow-sm w-full sm:w-auto transition-colors"
-                                value={sortOrder}
-                                onChange={(e) => { setSortOrder(e.target.value); resetPage(); }}
-                            >
-                                <option value="recent">Más recientes</option>
-                                <option value="price_asc">Menor precio</option>
-                                <option value="price_desc">Mayor precio</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <div className="py-20 flex justify-center flex-1">
-                            <div className="w-10 h-10 border-4 border-border-card border-t-primary rounded-full animate-spin"></div>
-                        </div>
-                    ) : filteredProperties.length === 0 ? (
-                        <div className="py-20 flex flex-col items-center justify-center text-center bg-card rounded-xl border border-border-card shadow-sm px-4 flex-1">
-                            <svg className="w-16 h-16 text-foreground/20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <h3 className="text-xl font-bold text-foreground/80 mb-2">No encontramos coincidencias</h3>
-                            <p className="text-foreground/50">Probá ajustando los filtros de la izquierda.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 flex-1 content-start">
-                                {paginatedProperties.map(p => (
-                                    <PropertyCard key={p.id} property={p} />
-                                ))}
-                            </div>
-
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={handlePageChange}
-                            />
-                        </>
-                    )}
                 </div>
+            </aside>
+
+            {/* ── GRILLA DE PROPIEDADES ── */}
+            <div className="flex-1 flex flex-col min-h-[600px] font-sans">
+                <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-b border-border-card pb-4">
+                    <h2 className="text-2xl md:text-3xl font-bold text-foreground font-serif">
+                        {loading ? "Buscando..." : `${filteredProperties.length} Propiedades`}
+                    </h2>
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-foreground/50 uppercase tracking-wider hidden sm:inline">Ordenar por:</span>
+                        <select
+                            className="bg-card border border-border-card text-foreground/80 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 outline-none font-medium cursor-pointer shadow-sm w-full sm:w-auto transition-colors"
+                            value={sortOrder}
+                            onChange={(e) => { setSortOrder(e.target.value); resetPage(); }}
+                        >
+                            <option value="recent">Más recientes</option>
+                            <option value="price_asc">Menor precio</option>
+                            <option value="price_desc">Mayor precio</option>
+                        </select>
+                    </div>
+                </div>
+
+                {loading ? (
+                    <div className="py-20 flex justify-center flex-1">
+                        <div className="w-10 h-10 border-4 border-border-card border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                ) : filteredProperties.length === 0 ? (
+                    <div className="py-20 flex flex-col items-center justify-center text-center bg-card rounded-xl border border-border-card shadow-sm px-4 flex-1">
+                        <svg className="w-16 h-16 text-foreground/20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h3 className="text-xl font-bold text-foreground/80 mb-2">No encontramos coincidencias</h3>
+                        <p className="text-foreground/50">Probá ajustando los filtros de la izquierda.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 flex-1 content-start">
+                            {paginatedProperties.map(p => (
+                                <PropertyCard key={p.id} property={p} />
+                            ))}
+                        </div>
+
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    </>
+                )}
             </div>
+        </div>
+    );
+}
+
+// ─── Página Principal (Export Default) ─────────────────────────────────────────
+export default function PropiedadesPage() {
+    return (
+        <div className="bg-background min-h-screen pb-20 pt-28 transition-colors duration-300">
+            <Header />
+            {/* El Suspense envuelve el componente que usa useSearchParams */}
+            <Suspense fallback={
+                <div className="py-20 flex justify-center">
+                    <div className="w-10 h-10 border-4 border-border-card border-t-primary rounded-full animate-spin"></div>
+                </div>
+            }>
+                <PropiedadesContent />
+            </Suspense>
         </div>
     );
 }

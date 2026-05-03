@@ -4,6 +4,7 @@ import "./globals.css";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import { ThemeProvider } from "./components/ThemeProvider";
 import WhatsAppFloating from "./components/WhatsAppFloating";
+import Footer from "./components/Footer";
 
 const aleo = localFont({
   src: "./fonts/Aleo-Black.ttf",
@@ -39,6 +40,7 @@ export default function RootLayout({
           <AnalyticsTracker />
           {children}
           <WhatsAppFloating />
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
