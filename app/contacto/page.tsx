@@ -1,151 +1,182 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from "../components/Header";
 import { supabase } from "../lib/supabase";
 import dynamic from "next/dynamic";
 
-// Importamos el mapa de forma dinámica para evitar errores de SSR
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
+const ContactMap = dynamic(() => import("../components/ContactMap"), {
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-input animate-pulse flex items-center justify-center text-foreground/40 font-medium font-sans">Cargando mapa...</div>
+});
 
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-
-// Arreglo de iconos para Leaflet
-const icon = typeof window !== 'undefined' ? L.icon({
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-}) : null;
-
-const sedes = [
+const sedesData = [
     {
         id: 1,
         nombre: "Administración",
-        direccion: "Chiozza 1851 Local 1",
-        horario: "Lunes a Sábado: 09:00 - 13:00 / 17:00 - 20:00",
-        coords: [-36.6836, -56.6775] as [number, number], // Coords aprox San Bernardo
-        info: "Consultas por alquileres temporarios y administración de consorcios."
+        direccion: "Chiozza 1851 Local 1, San Bernardo",
+        horario: "Lun. a Sáb: 09:00-13:00 / 17:00-20:00",
+        telefonos: [
+            { label: "WhatsApp / Oficina", num: "+54 9 11 5713-4054", link: "5491157134054" },
+            { label: "WhatsApp / Consultas", num: "2257 63-8709", link: "5492257638709" }
+        ]
     },
     {
         id: 2,
-        nombre: "Agencia Inmobiliaria",
-        direccion: "Chiozza 1796",
-        horario: "Lunes a Sábado: 09:30 - 20:30 (Corrido)",
-        coords: [-36.6828, -56.6773] as [number, number],
-        info: "Venta de propiedades, tasaciones y nuevos desarrollos."
+        nombre: "Inmobiliaria Minini",
+        direccion: "Chiozza 1796, San Bernardo",
+        horario: "Lun. a Sáb: 09:30 - 20:30 (Corrido)",
+        telefonos: [
+            { label: "WhatsApp Ventas", num: "2257 30-9051", link: "5492257309051" },
+            { label: "WhatsApp Ventas", num: "2257 30-7064", link: "5492257307064" }
+        ]
     }
 ];
 
 export default function ContactoPage() {
     const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
-    const [mounted, setMounted] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
-    useEffect(() => { setMounted(true); }, []);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const { error } = await supabase.from("inquiries").insert([{
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                message: formData.message,
+                property_id: null
+            }]);
+            if (error) throw error;
+            setStatus("success");
+            setFormData({ name: "", email: "", phone: "", message: "" });
+            setTimeout(() => setStatus("idle"), 5000);
+        } catch (err) {
+            console.error(err);
+            setStatus("error");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className="bg-background min-h-screen">
+        <div className="bg-background min-h-screen transition-colors duration-300">
             <Header />
 
             <main className="pt-32 pb-20 px-6">
                 <div className="max-w-6xl mx-auto">
 
-                    <div className="text-center mb-16">
+                    <div className="text-center mb-11">
                         <h1 className="text-4xl md:text-5xl font-bold text-foreground font-serif mb-4">Ponte en contacto</h1>
-                        <p className="text-foreground/60 max-w-2xl mx-auto font-sans">
-                            Visítanos en nuestras oficinas en San Bernardo o envíanos un mensaje directo.
+                        <p className="text-foreground/60 max-w-2xl mx-auto font-sans text-sm md:text-base">
+                            Comunícate directamente con nuestras oficinas o envíanos tu consulta para un asesoramiento personalizado.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-                        {/* Tarjetas de Sedes con Horarios */}
-                        {sedes.map((sede) => (
-                            <div key={sede.id} className="bg-card border border-border-card p-6 rounded-2xl">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                    {/* GRILLA DE SEDES Y CONTACTOS */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16 font-sans">
+                        {sedesData.map((sede) => (
+                            <div key={sede.id} className="bg-card border border-border-card rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                                <div className="p-6 border-b border-border-card bg-input/50">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold font-serif">{sede.nombre}</h3>
                                     </div>
-                                    <h3 className="text-xl font-bold font-serif">{sede.nombre}</h3>
+                                    <p className="text-foreground/60 text-xs italic">{sede.direccion}</p>
+                                    <p className="text-foreground/50 text-[11px] mt-1 font-bold uppercase tracking-wider">{sede.horario}</p>
                                 </div>
-                                <p className="text-foreground/80 text-sm mb-4 font-sans italic">{sede.direccion}</p>
 
-                                <div className="space-y-1 border-t border-border-card pt-4">
-                                    <span className="text-[10px] font-bold uppercase tracking-tighter text-primary">Horarios de Atención</span>
-                                    <p className="text-sm font-medium text-foreground/70">{sede.horario}</p>
+                                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                                    {sede.telefonos.map((tel, idx) => (
+                                        <div key={idx} className="bg-background border border-border-card p-4 rounded-xl flex flex-col justify-between">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">{tel.label}</span>
+                                                <a href={`tel:${tel.link}`} className="text-base font-bold text-foreground hover:text-primary transition-colors">
+                                                    {tel.num}
+                                                </a>
+                                            </div>
+                                            <a
+                                                href={`https://wa.me/${tel.link}`}
+                                                target="_blank"
+                                                className="mt-4 flex items-center justify-center gap-2 py-2 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-lg text-xs font-bold transition-all shadow-md active:scale-95"
+                                            >
+                                                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.87-2.053-.97-.297-.099-.511-.149-.722.149-.209.298-.769.969-.942 1.169-.173.199-.347.223-.644.075-.297-.15-1.255-.462-2.39-1.405-.881-.733-1.476-1.638-1.649-1.937-.173-.298-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.721-1.747-.988-2.392-.264-.625-.533-.541-.722-.553-.178-.011-.383-.013-.594-.013s-.549.074-.833.372c-.284.298-1.089 1.066-1.089 2.597 0 1.531 1.115 3.013 1.272 3.211.149.198 2.191 3.348 5.309 4.698 2.059.89 3.125.962 4.195.801 1.233-.186 3.791-1.546 4.321-3.037.53-1.49.53-2.766.372-3.036z" /></svg>
+                                                WhatsApp
+                                            </a>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         ))}
-
-                        {/* WhatsApp Card */}
-                        <div className="bg-primary p-6 rounded-2xl text-white flex flex-col justify-center">
-                            <h4 className="text-xl font-bold font-serif mb-2">WhatsApp Directo</h4>
-                            <p className="text-white/80 text-sm mb-4">Respuesta inmediata para urgencias.</p>
-                            <a href="https://wa.me/5492257307064" target="_blank" className="bg-white text-primary text-center py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-gray-100 transition-all">
-                                Enviar Mensaje
-                            </a>
-                        </div>
                     </div>
 
-                    {/* Sección de Mapa y Formulario Unificada */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                    {/* SECCIÓN MAPA Y FORMULARIO */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
 
-                        {/* El Mapa con ambos punteros */}
-                        <div className="h-[500px] rounded-2xl overflow-hidden border border-border-card sticky top-32">
-                            {mounted && icon && (
-                                <MapContainer
-                                    center={[-36.6832, -56.6774]}
-                                    zoom={17}
-                                    className="w-full h-full"
-                                >
-                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                    {sedes.map((sede) => (
-                                        <Marker key={sede.id} position={sede.coords} icon={icon}>
-                                            <Popup>
-                                                <div className="p-1 font-sans">
-                                                    <strong className="text-primary">{sede.nombre}</strong><br />
-                                                    <span className="text-xs text-gray-600">{sede.info}</span>
-                                                </div>
-                                            </Popup>
-                                        </Marker>
-                                    ))}
-                                </MapContainer>
-                            )}
+                        <div className="h-[550px] rounded-2xl overflow-hidden border border-border-card sticky top-32 shadow-inner">
+                            <ContactMap />
                         </div>
 
-                        {/* Formulario */}
-                        <div className="bg-card border border-border-card p-8 rounded-2xl">
-                            <h3 className="text-2xl font-bold text-foreground font-serif mb-6">Consulta General</h3>
-                            <form className="space-y-4">
-                                <div>
-                                    <label className="text-xs font-bold uppercase text-foreground/40 mb-1 block">Nombre Completo</label>
-                                    <input type="text" className="w-full bg-input border border-border-input rounded-xl px-4 py-3 text-foreground focus:border-primary outline-none transition-all" />
+                        <div className="bg-card border border-border-card p-8 md:p-10 rounded-2xl shadow-sm">
+                            <h3 className="text-2xl font-bold text-foreground font-serif mb-8">Envíanos una consulta</h3>
+
+                            {status === "success" && (
+                                <div className="mb-6 p-4 bg-green-500/10 text-green-600 border border-green-500/20 rounded-lg text-sm font-sans">
+                                    ¡Mensaje enviado con éxito! Nos comunicaremos pronto.
                                 </div>
+                            )}
+
+                            <form onSubmit={handleSubmit} className="space-y-5 font-sans">
+                                <div>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Nombre Completo</label>
+                                    <input
+                                        type="text" required
+                                        value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all"
+                                    />
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-xs font-bold uppercase text-foreground/40 mb-1 block">Teléfono</label>
-                                        <input type="tel" className="w-full bg-input border border-border-input rounded-xl px-4 py-3 text-foreground focus:border-primary outline-none transition-all" />
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Teléfono</label>
+                                        <input
+                                            type="tel" required
+                                            value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all"
+                                        />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold uppercase text-foreground/40 mb-1 block">Email</label>
-                                        <input type="email" className="w-full bg-input border border-border-input rounded-xl px-4 py-3 text-foreground focus:border-primary outline-none transition-all" />
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Email</label>
+                                        <input
+                                            type="email" required
+                                            value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all"
+                                        />
                                     </div>
                                 </div>
+
                                 <div>
-                                    <label className="text-xs font-bold uppercase text-foreground/40 mb-1 block">Mensaje</label>
-                                    <textarea rows={4} className="w-full bg-input border border-border-input rounded-xl px-4 py-3 text-foreground focus:border-primary outline-none transition-all resize-none"></textarea>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Mensaje</label>
+                                    <textarea
+                                        rows={5} required
+                                        value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                        className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all resize-none"
+                                    ></textarea>
                                 </div>
-                                <button className="w-full py-4 bg-primary text-white font-bold rounded-xl uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
-                                    Enviar Mensaje
+
+                                <button
+                                    type="submit" disabled={loading}
+                                    className="w-full py-5 bg-primary text-white font-bold rounded-xl uppercase text-xs tracking-[0.2em] shadow-lg shadow-primary/30 hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-50 font-serif"
+                                >
+                                    {loading ? "ENVIANDO..." : "ENVIAR MENSAJE"}
                                 </button>
                             </form>
                         </div>
                     </div>
-
                 </div>
             </main>
         </div>

@@ -12,8 +12,7 @@ interface Inquiry {
     email: string;
     message: string;
     status: string;
-    property_id: string;
-    // Relación con la tabla properties
+    property_id: string | null; // Puede ser null ahora
     properties?: {
         title: string;
         operation_type: string;
@@ -30,7 +29,6 @@ export default function ConsultasPage() {
 
     const fetchInquiries = async () => {
         setLoading(true);
-        // Traemos las consultas y cruzamos los datos con la tabla 'properties' para ver el título de la casa
         const { data, error } = await supabase
             .from("inquiries")
             .select(`
@@ -48,27 +46,22 @@ export default function ConsultasPage() {
         setLoading(false);
     };
 
-    // Función para cambiar el estado (ej: de 'pendiente' a 'contactado')
     const toggleStatus = async (id: string, currentStatus: string) => {
         const newStatus = currentStatus === 'pendiente' ? 'contactado' : 'pendiente';
-
         const { error } = await supabase
             .from('inquiries')
             .update({ status: newStatus })
             .eq('id', id);
 
         if (!error) {
-            // Actualizamos la UI sin tener que recargar todo
             setInquiries(inquiries.map(inq =>
                 inq.id === id ? { ...inq, status: newStatus } : inq
             ));
         }
     };
 
-    // Función para borrar una consulta definitivamente
     const deleteInquiry = async (id: string) => {
         if (!confirm("¿Estás seguro de que querés borrar este mensaje?")) return;
-
         const { error } = await supabase
             .from('inquiries')
             .delete()
@@ -80,15 +73,15 @@ export default function ConsultasPage() {
     };
 
     if (loading) {
-        return <div className="py-20 text-center text-gray-500">Cargando mensajes...</div>;
+        return <div className="py-20 text-center text-gray-500 font-sans">Cargando mensajes...</div>;
     }
 
     return (
-        <div>
+        <div className="font-sans">
             <div className="flex justify-between items-end mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Consultas Web</h1>
-                    <p className="text-gray-600">Mensajes enviados desde los formularios de las propiedades.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2 font-serif">Consultas Web</h1>
+                    <p className="text-gray-600">Mensajes recibidos desde el formulario de contacto y propiedades.</p>
                 </div>
             </div>
 
@@ -101,39 +94,46 @@ export default function ConsultasPage() {
                     {inquiries.map((inq) => (
                         <div
                             key={inq.id}
-                            className={`bg-white p-6 rounded-xl shadow-sm border-l-4 transition-all ${inq.status === 'pendiente' ? 'border-l-red-600 border-gray-200' : 'border-l-green-500 border-gray-100 opacity-75'
+                            className={`bg-white p-6 rounded-xl shadow-sm border-l-4 transition-all ${inq.status === 'pendiente' ? 'border-l-primary border-gray-200' : 'border-l-green-500 border-gray-100 opacity-75'
                                 }`}
                         >
                             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                 <div>
                                     <div className="flex items-center gap-3 mb-1">
                                         <h3 className="font-bold text-lg text-gray-900">{inq.name}</h3>
-                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${inq.status === 'pendiente' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${inq.status === 'pendiente' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
                                             }`}>
                                             {inq.status}
                                         </span>
                                     </div>
 
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mb-2">
-                                        <a href={`mailto:${inq.email}`} className="flex items-center gap-1 hover:text-[#8B1A1A]">
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mb-3">
+                                        <a href={`mailto:${inq.email}`} className="flex items-center gap-1 hover:text-primary transition-colors">
                                             📧 {inq.email}
                                         </a>
-                                        <a href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-green-600">
+                                        <a href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-green-600 transition-colors">
                                             📱 {inq.phone}
                                         </a>
                                         <span className="text-xs text-gray-400">• Recibido el {new Date(inq.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
 
-                                    {/* Propiedad vinculada */}
-                                    <div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded border border-gray-200 text-sm mt-2">
+                                    {/* SECCIÓN CORREGIDA: Lógica de Propiedad vs Consulta General */}
+                                    <div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded border border-gray-200 text-sm">
                                         <span className="text-gray-500">Consulta por:</span>
-                                        <Link href={`/propiedades/${inq.property_id}`} target="_blank" className="font-semibold text-[#8B1A1A] hover:underline">
-                                            {inq.properties?.title || 'Propiedad borrada'} {inq.properties?.operation_type ? `(${inq.properties.operation_type})` : ''}
-                                        </Link>
+                                        {!inq.property_id ? (
+                                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold uppercase tracking-wider">
+                                                Contacto Directo / General
+                                            </span>
+                                        ) : inq.properties ? (
+                                            <Link href={`/propiedades/${inq.property_id}`} target="_blank" className="font-bold text-primary hover:underline">
+                                                {inq.properties.title} <span className="font-normal opacity-70">({inq.properties.operation_type})</span>
+                                            </Link>
+                                        ) : (
+                                            <span className="text-red-500 font-bold italic text-xs">Propiedad borrada</span>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Botones de acción rápida */}
                                 <div className="flex gap-2 shrink-0">
                                     <button
                                         onClick={() => toggleStatus(inq.id, inq.status)}
@@ -142,7 +142,7 @@ export default function ConsultasPage() {
                                             : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200'
                                             }`}
                                     >
-                                        {inq.status === 'pendiente' ? '✅ Marcar contactado' : '↩️ Marcar pendiente'}
+                                        {inq.status === 'pendiente' ? '✅ Marcar contactado' : '↩️ Pendiente'}
                                     </button>
                                     <button
                                         onClick={() => deleteInquiry(inq.id)}
@@ -153,7 +153,7 @@ export default function ConsultasPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700 text-sm whitespace-pre-wrap">
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700 text-sm whitespace-pre-wrap italic">
                                 "{inq.message}"
                             </div>
                         </div>

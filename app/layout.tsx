@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import { ThemeProvider } from "./components/ThemeProvider";
+import WhatsAppFloating from "./components/WhatsAppFloating";
 
 const aleo = localFont({
   src: "./fonts/Aleo-Black.ttf",
@@ -37,6 +38,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AnalyticsTracker />
           {children}
+          <WhatsAppFloating />
         </ThemeProvider>
       </body>
     </html>
