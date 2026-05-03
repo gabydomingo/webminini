@@ -31,7 +31,8 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const logoClaro = "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/sign/FotosPagina/logo-letra-negra.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8xMzYyYTZhZi0zYTkwLTQ4MWYtYjZjMi1jMThjNzYwZjY5NzQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJGb3Rvc1BhZ2luYS9sb2dvLWxldHJhLW5lZ3JhLnBuZyIsImlhdCI6MTc3NTY2MDI3NCwiZXhwIjoxNzc2MjY1MDc0fQ.i_xbNGfLSxhw0fqSUZSN9GcCr2J4r9CnfuXxfc1x9tU";
+  // URLs Limpias y Públicas
+  const logoClaro = "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/logo-letra-negra.png";
   const logoOscuro = "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/1.png";
 
   return (
