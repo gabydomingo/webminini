@@ -107,7 +107,8 @@ function PropiedadesContent() {
             const { data: propData } = await supabase
                 .from('properties')
                 .select('*')
-                .eq('status', 'disponible')
+                // 👇 ESTO FILTRA LAS OCULTAS 👇
+                .neq('status', 'oculto')
                 .order('created_at', { ascending: false });
 
             if (propData) setProperties(propData);

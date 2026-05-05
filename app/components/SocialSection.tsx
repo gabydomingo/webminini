@@ -247,7 +247,7 @@ export default function SocialSection() {
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <Link
-                                href="https://www.tiktok.com/@mininipropiedades"
+                                href="https://www.tiktok.com/@minini_propiedades?_r=1&_t=ZS-967CB2qxIn7"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center justify-center gap-3 px-8 py-4 bg-primary hover:bg-primary-hover text-white font-bold text-sm tracking-widest uppercase rounded transition-all duration-300 shadow-xl hover:-translate-y-1 font-sans"

@@ -2,17 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
+    const pathname = usePathname();
 
-    // Función para subir al inicio suavemente
+    // Si la ruta empieza con "/admin" o es una subruta de administración de backoffice, no renderizamos el Footer.
+    // (Nota: si tu URL de admin es distinta, por ejemplo "/administracion/panel", podés ajustarlo acá)
+    if (pathname?.startsWith("/admin") || pathname?.includes("/administracion/")) {
+        return null;
+    }
+
     const scrollToTop = (e: React.MouseEvent) => {
         e.preventDefault();
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     return (
@@ -20,19 +24,20 @@ export default function Footer() {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
 
-                    {/* COLUMNA 1: LOGO Y REDES (Centrado entre sí) */}
+                    {/* COLUMNA 1: LOGO Y REDES */}
                     <div className="flex flex-col items-start space-y-8">
-                        <div className="relative w-72 h-24"> {/* Aumentado a w-72 h-24 */}
+                        <div className="relative w-72 h-24">
                             <Image
                                 src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/Copia%20de%201col%20neg%20compacto.png"
                                 alt="Minini Propiedades"
                                 fill
+                                sizes="288px" // Definimos el ancho exacto para optimizar
                                 className="object-contain filter brightness-0 invert"
                                 priority
                             />
                         </div>
 
-                        <div className="space-y-4 pl-2"> {/* Ligero padding para alinear con el logo */}
+                        <div className="space-y-4 pl-2">
                             <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Síguenos en redes</h4>
                             <div className="flex items-center gap-6">
                                 <a href="https://www.instagram.com/mininipropiedades/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-primary transition-colors">
@@ -67,13 +72,13 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* COLUMNA 3: MENÚ (Scroll al Inicio) */}
+                    {/* COLUMNA 3: MENÚ */}
                     <div className="space-y-4">
                         <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-primary border-b border-primary/20 pb-2 inline-block font-serif">
                             Menú
                         </h4>
                         <nav className="flex flex-col gap-2 text-sm text-white/60">
-                            <a href="#" onClick={scrollToTop} className="hover:text-primary transition-colors cursor-pointer">Inicio</a>
+                            <button onClick={scrollToTop} className="text-left hover:text-primary transition-colors cursor-pointer outline-none">Inicio</button>
                             <Link href="/propiedades" className="hover:text-primary transition-colors">Propiedades</Link>
                             <Link href="/sobre-nosotros" className="hover:text-primary transition-colors">Sobre Nosotros</Link>
                             <Link href="/contacto" className="hover:text-primary transition-colors">Contacto</Link>
@@ -81,7 +86,7 @@ export default function Footer() {
                         </nav>
                     </div>
 
-                    {/* COLUMNA 4: INSTITUCIONAL (Agrandado con Links) */}
+                    {/* COLUMNA 4: INSTITUCIONAL */}
                     <div className="space-y-6">
                         <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-primary border-b border-primary/20 pb-2 inline-block font-serif">
                             Institucional
@@ -91,12 +96,13 @@ export default function Footer() {
                                 href="https://comado.com.ar/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="relative w-48 h-16 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
+                                className="relative w-56 h-20 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
                             >
                                 <Image
                                     src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/logo-blanco-colegio3-min.png"
                                     alt="Colegio de Martilleros"
                                     fill
+                                    sizes="224px"
                                     className="object-contain"
                                 />
                             </a>
@@ -104,12 +110,13 @@ export default function Footer() {
                                 href="https://camaraadministrador.com.ar/new/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="relative w-48 h-16 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
+                                className="relative w-56 h-20 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
                             >
                                 <Image
                                     src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/Logo-Camara-con-sigla_BLANCO3.png"
                                     alt="Cámara de Administradores"
                                     fill
+                                    sizes="224px"
                                     className="object-contain"
                                 />
                             </a>
@@ -123,7 +130,7 @@ export default function Footer() {
                     <p>© {currentYear} Minini Propiedades. Todos los derechos reservados.</p>
                     <div className="flex items-center gap-2">
                         <span>Powered by</span>
-                        <span className="text-white/50 tracking-tighter text-xs">Minini Tech</span>
+                        <span className="text-white/50 tracking-tighter text-xs uppercase">Minini Tech</span>
                     </div>
                 </div>
             </div>

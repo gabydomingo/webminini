@@ -1,8 +1,16 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 
 export default function WhatsAppFloating() {
+    const pathname = usePathname();
+
+    // Ocultamos el botón flotante en la misma ruta de backoffice
+    if (pathname?.startsWith("/admin") || pathname?.includes("/administracion/")) {
+        return null;
+    }
+
     const phoneNumber = "5492257309051"; // Formato internacional para Argentina
     const message = encodeURIComponent("Hola! Vengo de su página web y me gustaría realizar una consulta.");
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
@@ -28,7 +36,7 @@ export default function WhatsAppFloating() {
 
                 {/* Icono de WhatsApp (SVG) */}
                 <svg
-                    className="w-2 h-2 md:w-6 md:h-6 fill-white"
+                    className="w-8 h-8 fill-white"
                     viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                 >

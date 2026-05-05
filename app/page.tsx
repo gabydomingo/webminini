@@ -4,14 +4,17 @@ import { supabase } from "./lib/supabase";
 import SearchBar from "./components/SearchBar";
 import Header from "./components/Header";
 import SocialSection from "./components/SocialSection";
-import PropertyCard from "./components/PropertyCard"; // ¡Lo importamos!
+import PropertyCard from "./components/PropertyCard";
+
+// 👇 ESTO DESACTIVA LA CACHÉ PARA ESTA PÁGINA 👇
+export const revalidate = 0;
 
 export default async function HomePage() {
   const { data } = await supabase
     .from("properties")
     .select("*")
-    .eq("status", "disponible")
     .eq("is_featured", true)
+    .neq("status", "oculto") // 👇 EVITA QUE SALGAN LAS OCULTAS 👇
     .order("created_at", { ascending: false })
     .limit(6);
 
