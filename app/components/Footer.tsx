@@ -130,7 +130,7 @@ export default function Footer() {
                     <p>© {currentYear} Minini Propiedades. Todos los derechos reservados.</p>
                     <div className="flex items-center gap-2">
                         <span>Powered by</span>
-                        <span className="text-white/50 tracking-tighter text-xs uppercase">Minini Tech</span>
+                        <span className="text-white/50 tracking-tighter text-xs uppercase">Gabriel Domingo</span>
                     </div>
                 </div>
             </div>
