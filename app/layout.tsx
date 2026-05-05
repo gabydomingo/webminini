@@ -21,6 +21,10 @@ const jost = localFont({
 export const metadata: Metadata = {
   title: "Inmobiliaria Minini",
   description: "Encontrá tu propiedad ideal en La Costa",
+  icons: {
+    icon: "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/2.png",
+    apple: "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/2.png",
+  },
 };
 
 export default function RootLayout({
