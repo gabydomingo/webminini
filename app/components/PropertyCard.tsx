@@ -29,14 +29,12 @@ function deduplicateLocation(location: string | null): string {
     return unique.join(', ');
 }
 
-// ─── Componente Exportado ─────────────────────────────────────────────────────
 export default function PropertyCard({ property }: { property: Property }) {
     const imgArray = Array.isArray(property.images) ? property.images : [];
     const img = imgArray.length > 0 ? imgArray[0] : null;
 
     return (
         <Link href={`/propiedades/${property.id}`} className="group block h-full">
-            {/* ACÁ USAMOS LAS VARIABLES CSS: bg-card y border-border-card */}
             <div className="bg-card border border-border-card rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
 
                 <div className="relative h-52 overflow-hidden shrink-0">
@@ -45,6 +43,8 @@ export default function PropertyCard({ property }: { property: Property }) {
                             src={img}
                             alt={property.title}
                             fill
+                            // Esto optimiza la descarga según el ancho de la pantalla
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
@@ -76,7 +76,6 @@ export default function PropertyCard({ property }: { property: Property }) {
                         <span className="line-clamp-2">{deduplicateLocation(property.location)}</span>
                     </p>
 
-                    {/* Línea superior con el color del borde de la tarjeta */}
                     <div className="flex flex-wrap items-center gap-4 text-xs text-foreground/70 border-t border-border-card pt-3 mt-auto">
                         {property.bedrooms > 0 && (
                             <span className="flex items-center gap-1">
