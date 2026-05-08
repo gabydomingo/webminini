@@ -1,8 +1,15 @@
 "use client";
 
+import type { Metadata } from "next";
 import Image from "next/image";
 import Header from "../components/Header";
 
+export const metadata: Metadata = {
+    title: "Contacto",
+    description:
+        "Escribinos por WhatsApp, visitá nuestras oficinas en Chiozza 1796 o dejanos tu consulta online. Atendemos de lunes a sábado de 9:30 a 20:30 hs.",
+    openGraph: { url: "/contacto" },
+};
 
 const socios = [
     {

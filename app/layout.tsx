@@ -19,8 +19,18 @@ const jost = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Inmobiliaria Minini",
-  description: "Encontrá tu propiedad ideal en La Costa",
+  metadataBase: new URL("https://webminini.vercel.app"),
+  title: {
+    default: "Inmobiliaria Minini | Propiedades en San Bernardo y La Costa",
+    template: "%s | Minini Propiedades",
+  },
+  description:
+    "Comprá, vendé o alquilá propiedades en San Bernardo, Mar de Ajó y el Partido de la Costa. Más de 15 años de experiencia. Martilleros matriculados.",
+  openGraph: {
+    siteName: "Minini Propiedades",
+    locale: "es_AR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

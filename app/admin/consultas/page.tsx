@@ -12,7 +12,7 @@ interface Inquiry {
     email: string;
     message: string;
     status: string;
-    property_id: string | null; // Puede ser null ahora
+    property_id: string | null;
     properties?: {
         title: string;
         operation_type: string;

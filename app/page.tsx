@@ -5,16 +5,28 @@ import SearchBar from "./components/SearchBar";
 import Header from "./components/Header";
 import SocialSection from "./components/SocialSection";
 import PropertyCard from "./components/PropertyCard";
+import type { Metadata } from "next";
 
-// 👇 ESTO DESACTIVA LA CACHÉ PARA ESTA PÁGINA 👇
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: "Propiedades en Venta y Alquiler en La Costa",
+  description:
+    "Explorá nuestro listado de casas, departamentos, dúplex y lotes en San Bernardo, Mar de Ajó y toda la Costa Atlántica. Filtrá por tipo, operación y ubicación.",
+  openGraph: {
+    title: "Propiedades en Venta y Alquiler en La Costa | Minini",
+    description:
+      "Casas, departamentos, dúplex y lotes en San Bernardo y Mar de Ajó.",
+    url: "/propiedades",
+  },
+};
 
 export default async function HomePage() {
   const { data } = await supabase
     .from("properties")
     .select("*")
     .eq("is_featured", true)
-    .neq("status", "oculto") // 👇 EVITA QUE SALGAN LAS OCULTAS 👇
+    .neq("status", "oculto")
     .order("created_at", { ascending: false })
     .limit(6);
 
