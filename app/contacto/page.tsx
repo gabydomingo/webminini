@@ -1,18 +1,10 @@
-//"use client";
+"use client";
 
 import { useState } from "react";
 import Header from "../components/Header";
 import { supabase } from "../lib/supabase";
 import dynamic from "next/dynamic";
-import type { Metadata } from "next";
 
-
-export const metadata: Metadata = {
-    title: "Contacto",
-    description:
-        "Escribinos por WhatsApp, visitá nuestras oficinas en Chiozza 1796 o dejanos tu consulta online. Atendemos de lunes a sábado de 9:30 a 20:30 hs.",
-    openGraph: { url: "/contacto" },
-};
 
 const ContactMap = dynamic(() => import("../components/ContactMap"), {
     ssr: false,
@@ -42,7 +34,7 @@ const sedesData = [
     }
 ];
 
-export default function ContactoPage() {
+export default function ContactoClient() {
     const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
