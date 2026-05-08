@@ -82,7 +82,7 @@ export default function Footer() {
                             <Link href="/propiedades" className="hover:text-primary transition-colors">Propiedades</Link>
                             <Link href="/sobre-nosotros" className="hover:text-primary transition-colors">Sobre Nosotros</Link>
                             <Link href="/contacto" className="hover:text-primary transition-colors">Contacto</Link>
-                            <Link href="/administracion" className="hover:text-primary transition-colors">Administración</Link>
+                            <Link href="/consorcio" className="hover:text-primary transition-colors">Administración</Link>
                         </nav>
                     </div>
 
@@ -129,8 +129,15 @@ export default function Footer() {
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-white/30 uppercase tracking-widest font-bold">
                     <p>© {currentYear} Minini Propiedades. Todos los derechos reservados.</p>
                     <div className="flex items-center gap-2">
-                        <span>Powered by</span>
-                        <span className="text-white/50 tracking-tighter text-xs uppercase">Gabriel Domingo</span>
+                        <span>Diseñado y Desarrollado por</span>
+                        <a
+                            href="https://porfolio-neon-kappa.vercel.app/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white/50 tracking-tighter text-xs uppercase hover:text-white transition-colors cursor-pointer"
+                        >
+                            Gabriel Domingo
+                        </a>
                     </div>
                 </div>
             </div>

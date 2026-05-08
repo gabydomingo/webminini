@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { usePathname } from "next/navigation"; // <-- Importamos usePathname
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { label: "Inicio", href: "/" },
   { label: "Propiedades", href: "/propiedades" },
   { label: "Sobre nosotros", href: "/sobre-nosotros" },
   { label: "Contacto", href: "/contacto" },
-  { label: "Administración", href: "/administracion" },
+  { label: "Administración", href: "/consorcio" },
 ];
 
 export default function Header() {
