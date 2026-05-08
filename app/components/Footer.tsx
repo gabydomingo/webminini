@@ -25,19 +25,19 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
 
                     {/* COLUMNA 1: LOGO Y REDES */}
-                    <div className="flex flex-col items-start space-y-8">
+                    <div className="flex flex-col items-center space-y-8">
                         <div className="relative w-72 h-24">
                             <Image
                                 src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/Copia%20de%201col%20neg%20compacto.png"
                                 alt="Minini Propiedades"
                                 fill
-                                sizes="288px" // Definimos el ancho exacto para optimizar
+                                sizes="288px"
                                 className="object-contain filter brightness-0 invert"
                                 priority
                             />
                         </div>
 
-                        <div className="space-y-4 pl-2">
+                        <div className="space-y-4 flex flex-col items-center">
                             <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Síguenos en redes</h4>
                             <div className="flex items-center gap-6">
                                 <a href="https://www.instagram.com/mininipropiedades/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-primary transition-colors">
