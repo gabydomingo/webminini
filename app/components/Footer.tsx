@@ -62,12 +62,7 @@ export default function Footer() {
                             <div>
                                 <p className="font-bold text-white text-sm mb-1 font-serif">Román Minini</p>
                                 <p>Martillero y Corredor Público</p>
-                                <p>Tomo III - Folio 548 | Mat. N° 1134</p>
-                            </div>
-                            <div className="pt-2 border-t border-white/5">
-                                <p className="font-bold text-white text-sm mb-1 font-serif">Juan Minini</p>
-                                <p>Martillero y Corredor Público</p>
-                                <p>Tomo III - Folio 521 | Mat. N° 1098</p>
+                                <p>Tomo III - Folio 359 | Mat. N° 1057</p>
                             </div>
                         </div>
                     </div>

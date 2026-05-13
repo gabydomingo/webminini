@@ -185,19 +185,18 @@ export default function EditarPropiedad() {
     return (
         <div className="max-w-3xl mx-auto pb-16 font-sans">
             <div className="flex items-center gap-4 mb-6">
-                <Link href="/admin/propiedades" className="text-foreground/50 hover:text-foreground transition"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></Link>
-                <h1 className="text-3xl font-bold text-foreground font-serif">Editar Propiedad</h1>
+                <Link href="/admin/propiedades" className="text-foreground/50 hover:text-foreground transition"><svg className="w-6 h-6" fill="none" stroke="#000000" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></Link>
+                {/* ACÁ CORREGIMOS text-gray-900 POR text-foreground */}
+                <h1 className="text-3xl font-bold text-black font-serif">Editar Propiedad</h1>
             </div>
 
             {error && <div className="bg-red-500/10 border-l-4 border-red-500 text-red-700 dark:text-red-400 p-4 mb-6 rounded"><p>{error}</p></div>}
 
-            {/* SE USAN VARIABLES DE CSS: bg-card, border-border-card */}
             <form onSubmit={handleSubmit} className="bg-card shadow-sm border border-border-card rounded-xl overflow-hidden">
 
                 <div className="p-8 border-b border-border-card">
                     <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2 font-serif"><span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-sans">1</span>Información Básica</h2>
                     <div className="space-y-6">
-                        {/* SE USAN VARIABLES DE CSS: bg-input, text-foreground, border-border-input */}
                         <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Título *</label><input type="text" name="title" required value={formData.title} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg focus:ring-1 focus:ring-primary outline-none bg-input transition-colors" /></div>
                         <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Descripción</label><textarea name="description" rows={4} value={formData.description} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg focus:ring-1 focus:ring-primary outline-none bg-input transition-colors"></textarea></div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -217,7 +216,7 @@ export default function EditarPropiedad() {
                         </div>
                         <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Calle y Altura *</label><input type="text" name="location" required value={formData.location} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors" /></div>
                         <div className="bg-card p-5 rounded-lg border border-border-card shadow-sm">
-                            <div className="flex justify-between items-center mb-4"><label className="block text-sm font-semibold text-foreground/80">Ubicación exacta en el mapa</label><button type="button" onClick={handleGetLocation} className="text-xs bg-input hover:bg-border-card text-foreground py-1.5 px-3 rounded flex items-center gap-1 font-medium transition-colors">📍 Usar mi ubicación</button></div>
+                            {/* <div className="flex justify-between items-center mb-4"><label className="block text-sm font-semibold text-foreground/80">Ubicación exacta en el mapa</label><button type="button" onClick={handleGetLocation} className="text-xs bg-input hover:bg-border-card text-foreground py-1.5 px-3 rounded flex items-center gap-1 font-medium transition-colors">📍 Usar mi ubicación</button></div> */}
                             <MapPicker lat={formData.latitude} lng={formData.longitude} onChange={(lat, lng) => setFormData({ ...formData, latitude: lat, longitude: lng })} />
                         </div>
                     </div>
@@ -227,12 +226,12 @@ export default function EditarPropiedad() {
                     <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2 font-serif"><span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-sans">3</span>Precio y Dimensiones</h2>
                     <div className="space-y-6">
                         <div className="flex gap-4">
-                            <div className="w-1/3"><label className="block text-sm font-semibold text-foreground/80 mb-1">Moneda</label><select name="currency" value={formData.currency} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="USD">U$S</option><option value="ARS">$</option></select></div>
+                            <div className="w-1/3"><label className="block text-sm font-semibold text-foreground/80 mb-1">Moneda</label><select name="currency" value={formData.currency} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="USD">U$S (Dólar)</option><option value="ARS">$ (Pesos)</option></select></div>
                             <div className="w-2/3"><label className="block text-sm font-semibold text-foreground/80 mb-1">Valor *</label><input type="number" name="price" required value={formData.price} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors" /></div>
                         </div>
                         <div className="grid grid-cols-3 gap-6">
                             <div><label className="block text-sm font-semibold text-foreground/80 mb-1 text-center">Ambientes</label><input type="number" name="environments" min="0" value={formData.environments} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none text-center bg-input transition-colors" /></div>
-                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1 text-center">Dorm.</label><input type="number" name="bedrooms" min="0" value={formData.bedrooms} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none text-center bg-input transition-colors" /></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1 text-center">Dormitorios</label><input type="number" name="bedrooms" min="0" value={formData.bedrooms} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none text-center bg-input transition-colors" /></div>
                             <div><label className="block text-sm font-semibold text-foreground/80 mb-1 text-center">Baños</label><input type="number" name="bathrooms" min="0" value={formData.bathrooms} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none text-center bg-input transition-colors" /></div>
                         </div>
                         <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Características (Separadas por coma)</label><input type="text" name="features" value={formData.features} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors" /></div>

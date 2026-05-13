@@ -61,56 +61,59 @@ export default function GestionOpciones() {
     ]
 
     return (
-        <div className="max-w-5xl mx-auto pb-12">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Listas y Categorías</h1>
-            <p className="text-gray-500 mb-8">Agregá o eliminá los valores que aparecerán en los formularios de propiedades.</p>
+        <div className="max-w-5xl mx-auto pb-12 font-sans">
+            <h1 className="text-3xl font-bold text-black mb-2">Gestión de Listas y Categorías</h1>
+            <p className="text-black mb-8">Agregá o eliminá los valores que aparecerán en los formularios de propiedades.</p>
 
             {/* Formulario para agregar nuevos */}
-            <form onSubmit={handleAdd} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row items-end gap-4">
+            <form onSubmit={handleAdd} className="bg-card p-6 rounded-xl shadow-sm border border-border-card mb-8 flex flex-col md:flex-row items-end gap-4 transition-colors">
                 <div className="flex-1 w-full">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">¿A qué lista pertenece?</label>
+                    <label className="block text-sm font-semibold text-foreground/80 mb-1">¿A qué lista pertenece?</label>
                     <select
                         value={newOption.category}
                         onChange={(e) => setNewOption({ ...newOption, category: e.target.value })}
-                        className="w-full p-2.5 border border-gray-300 rounded focus:outline-none focus:border-[#8B1A1A]"
+                        className="w-full p-2.5 bg-input border border-border-input text-foreground rounded-lg focus:outline-none focus:border-[#8B1A1A] transition-colors"
                     >
                         {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                 </div>
                 <div className="flex-1 w-full">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Nuevo Valor</label>
+                    <label className="block text-sm font-semibold text-foreground/80 mb-1">Nuevo Valor</label>
                     <input
                         type="text"
                         required
                         value={newOption.value}
                         onChange={(e) => setNewOption({ ...newOption, value: e.target.value })}
                         placeholder="Ej: Galpón, Buenos Aires, Permuta..."
-                        className="w-full p-2.5 border border-gray-300 rounded focus:outline-none focus:border-[#8B1A1A]"
+                        className="w-full p-2.5 bg-input border border-border-input text-foreground rounded-lg focus:outline-none focus:border-[#8B1A1A] transition-colors"
                     />
                 </div>
-                <button type="submit" className="px-6 py-2.5 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold rounded transition w-full md:w-auto">
+                <button type="submit" className="px-6 py-2.5 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold rounded-lg transition-colors w-full md:w-auto shadow-sm">
                     Agregar a la lista
                 </button>
             </form>
 
             {/* Grilla mostrando lo que ya existe */}
             {loading ? (
-                <p className="text-center text-gray-500">Cargando listas...</p>
+                <div className="flex justify-center py-10">
+                    <div className="w-8 h-8 border-4 border-border-card border-t-[#8B1A1A] rounded-full animate-spin"></div>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {categories.map(category => (
-                        <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div className="bg-gray-50 p-4 border-b border-gray-200 font-bold text-gray-800">
+                        <div key={category.id} className="bg-card rounded-xl shadow-sm border border-border-card overflow-hidden transition-colors">
+                            {/* Devolvemos el texto a bold y gris oscuro/claro según el tema */}
+                            <div className="bg-input p-4 border-b border-border-card font-bold text-foreground">
                                 {category.label}
                             </div>
-                            <ul className="divide-y divide-gray-100 max-h-60 overflow-y-auto">
+                            <ul className="divide-y divide-border-card max-h-60 overflow-y-auto">
                                 {(groupedOptions[category.id] || []).length === 0 ? (
-                                    <li className="p-4 text-sm text-gray-500 italic">No hay valores cargados aún.</li>
+                                    <li className="p-4 text-sm text-foreground/50 italic text-center">No hay valores cargados aún.</li>
                                 ) : (
                                     groupedOptions[category.id].map(opt => (
-                                        <li key={opt.id} className="p-4 flex justify-between items-center text-sm">
-                                            <span className="font-medium text-gray-700">{opt.value}</span>
-                                            <button onClick={() => handleDelete(opt.id)} className="text-red-500 hover:text-red-700 text-xs font-semibold">
+                                        <li key={opt.id} className="p-4 flex justify-between items-center text-sm hover:bg-foreground/[0.02] transition-colors">
+                                            <span className="font-medium text-foreground/80">{opt.value}</span>
+                                            <button onClick={() => handleDelete(opt.id)} className="text-red-500 hover:text-red-700 dark:text-red-400 text-xs font-semibold px-2 py-1 rounded transition-colors">
                                                 Borrar
                                             </button>
                                         </li>

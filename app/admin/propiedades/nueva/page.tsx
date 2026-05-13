@@ -113,7 +113,6 @@ export default function NuevaPropiedad() {
 
             const featuresArray = formData.features.split(',').map(f => f.trim()).filter(f => f !== '')
 
-            // CORRECCIÓN ACÁ: Ya no concatenamos. Guardamos solo la calle en location.
             const { error: dbError } = await supabase.from('properties').insert([{
                 title: formData.title,
                 description: formData.description,
@@ -123,7 +122,7 @@ export default function NuevaPropiedad() {
                 property_type: formData.property_type,
                 provincia: formData.provincia,
                 localidad: formData.localidad,
-                location: formData.location.trim(), // Solo guardamos la calle/altura ingresada
+                location: formData.location.trim(),
                 latitude: formData.latitude ? parseFloat(formData.latitude) : null,
                 longitude: formData.longitude ? parseFloat(formData.longitude) : null,
                 bedrooms: Number(formData.bedrooms),
@@ -145,75 +144,77 @@ export default function NuevaPropiedad() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto pb-16">
+        <div className="max-w-3xl mx-auto pb-16 font-sans">
             <div className="flex items-center gap-4 mb-6">
-                <Link href="/admin/propiedades" className="text-gray-400 hover:text-gray-900 transition">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <Link href="/admin/propiedades" className="text-foreground/50 hover:text-foreground transition">
+                    <svg className="w-6 h-6" fill="none" stroke="#000000" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "'Georgia', serif" }}>Ficha de Propiedad</h1>
+                {/* ACÁ CORREGIMOS text-gray-900 POR text-foreground */}
+                <h1 className="text-3xl font-bold text-black font-serif">Ficha de Propiedad</h1>
             </div>
 
-            {error && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded"><p>{error}</p></div>}
+            {error && <div className="bg-red-500/10 border-l-4 border-red-500 text-red-700 dark:text-red-400 p-4 mb-6 rounded"><p>{error}</p></div>}
 
-            <form onSubmit={handleSubmit} className="bg-white shadow-lg border border-gray-200 rounded-sm">
+            <form onSubmit={handleSubmit} className="bg-card shadow-sm border border-border-card rounded-xl overflow-hidden">
 
-                <div className="p-8 border-b border-gray-100">
-                    <h2 className="text-xl font-semibold text-[#8B1A1A] mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-sm">1</span>Información Básica</h2>
+                <div className="p-8 border-b border-border-card">
+                    <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2 font-serif"><span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-sans">1</span>Información Básica</h2>
                     <div className="space-y-6">
-                        <div><label className="block text-sm font-semibold text-gray-700 mb-1">Título *</label><input type="text" name="title" required value={formData.title} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded focus:ring-1 focus:ring-[#8B1A1A] outline-none bg-gray-50" /></div>
-                        <div><label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label><textarea name="description" rows={4} value={formData.description} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded focus:ring-1 focus:ring-[#8B1A1A] outline-none bg-gray-50"></textarea></div>
+                        {/* INPUTS: SE CAMBIÓ bg-gray-50 POR bg-input, text-gray-700 POR text-foreground/80, border-gray-300 POR border-border-input */}
+                        <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Título *</label><input type="text" name="title" required value={formData.title} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg focus:ring-1 focus:ring-primary outline-none bg-input transition-colors" /></div>
+                        <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Descripción</label><textarea name="description" rows={4} value={formData.description} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg focus:ring-1 focus:ring-primary outline-none bg-input transition-colors"></textarea></div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Tipo</label><select name="property_type" required value={formData.property_type} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded outline-none bg-gray-50"><option value="" disabled>Seleccionar...</option>{listOptions.tipo_propiedad?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Operación</label><select name="operation_type" required value={formData.operation_type} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded outline-none bg-gray-50"><option value="" disabled>Seleccionar...</option>{listOptions.tipo_operacion?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Estado</label><select name="status" value={formData.status} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded outline-none bg-gray-50"><option value="disponible">Disponible</option><option value="reservado">Reservado</option><option value="vendido">Vendido/Alquilado</option><option value="oculto">Oculto</option></select></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Tipo</label><select name="property_type" required value={formData.property_type} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="" disabled>Seleccionar...</option>{listOptions.tipo_propiedad?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Operación</label><select name="operation_type" required value={formData.operation_type} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="" disabled>Seleccionar...</option>{listOptions.tipo_operacion?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Estado</label><select name="status" value={formData.status} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="disponible">Disponible</option><option value="reservado">Reservado</option><option value="vendido">Vendido/Alquilado</option><option value="oculto">Oculto</option></select></div>
                         </div>
                     </div>
                 </div>
 
-                <div className="p-8 border-b border-gray-100 bg-[#faf7f2]/30">
-                    <h2 className="text-xl font-semibold text-[#8B1A1A] mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-sm">2</span>Ubicación y Mapa</h2>
+                <div className="p-8 border-b border-border-card bg-foreground/[0.02]">
+                    <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2 font-serif"><span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-sans">2</span>Ubicación y Mapa</h2>
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Provincia *</label><select name="provincia" required value={formData.provincia} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded focus:ring-1 focus:ring-[#8B1A1A] outline-none bg-white"><option value="" disabled>Seleccionar...</option>{listOptions.provincia?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Localidad *</label><select name="localidad" required value={formData.localidad} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded focus:ring-1 focus:ring-[#8B1A1A] outline-none bg-white"><option value="" disabled>Seleccionar...</option>{listOptions.localidad?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Provincia *</label><select name="provincia" required value={formData.provincia} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="" disabled>Seleccionar...</option>{listOptions.provincia?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Localidad *</label><select name="localidad" required value={formData.localidad} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="" disabled>Seleccionar...</option>{listOptions.localidad?.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select></div>
                         </div>
-                        <div><label className="block text-sm font-semibold text-gray-700 mb-1">Calle y Altura *</label><input type="text" name="location" required value={formData.location} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded focus:ring-1 focus:ring-[#8B1A1A] outline-none bg-white" /></div>
-                        <div className="bg-white p-5 rounded border border-gray-200 shadow-sm">
-                            <div className="flex justify-between items-center mb-4"><label className="block text-sm font-semibold text-gray-700">Ubicación exacta en el mapa</label><button type="button" onClick={handleGetLocation} className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1.5 px-3 rounded flex items-center gap-1 font-medium shadow-sm">📍 Usar mi ubicación actual</button></div>
+                        <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Calle y Altura *</label><input type="text" name="location" required value={formData.location} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors" /></div>
+                        <div className="bg-card p-5 rounded-lg border border-border-card shadow-sm">
+                            <div className="flex justify-between items-center mb-4"><label className="block text-sm font-semibold text-foreground/80">Ubicación exacta en el mapa</label><button type="button" onClick={handleGetLocation} className="text-xs bg-input hover:bg-border-card text-foreground py-1.5 px-3 rounded flex items-center gap-1 font-medium transition-colors">📍 Usar mi ubicación</button></div>
                             <MapPicker lat={formData.latitude} lng={formData.longitude} onChange={(lat, lng) => setFormData({ ...formData, latitude: lat, longitude: lng })} />
                         </div>
                     </div>
                 </div>
 
-                <div className="p-8 border-b border-gray-100">
-                    <h2 className="text-xl font-semibold text-[#8B1A1A] mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-sm">3</span>Precio y Dimensiones</h2>
+                <div className="p-8 border-b border-border-card">
+                    <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2 font-serif"><span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-sans">3</span>Precio y Dimensiones</h2>
                     <div className="space-y-6">
                         <div className="flex gap-4">
-                            <div className="w-1/3"><label className="block text-sm font-semibold text-gray-700 mb-1">Moneda</label><select name="currency" value={formData.currency} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded outline-none bg-gray-50"><option value="USD">U$S (Dólar)</option><option value="ARS">$ (Pesos)</option></select></div>
-                            <div className="w-2/3"><label className="block text-sm font-semibold text-gray-700 mb-1">Valor *</label><input type="number" name="price" required value={formData.price} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded focus:ring-1 focus:ring-[#8B1A1A] outline-none bg-gray-50" /></div>
+                            <div className="w-1/3"><label className="block text-sm font-semibold text-foreground/80 mb-1">Moneda</label><select name="currency" value={formData.currency} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors"><option value="USD">U$S (Dólar)</option><option value="ARS">$ (Pesos)</option></select></div>
+                            <div className="w-2/3"><label className="block text-sm font-semibold text-foreground/80 mb-1">Valor *</label><input type="number" name="price" required value={formData.price} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors" /></div>
                         </div>
                         <div className="grid grid-cols-3 gap-6">
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1 text-center">Ambientes</label><input type="number" name="environments" min="0" value={formData.environments} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded outline-none text-center bg-gray-50" /></div>
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1 text-center">Dormitorios</label><input type="number" name="bedrooms" min="0" value={formData.bedrooms} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded outline-none text-center bg-gray-50" /></div>
-                            <div><label className="block text-sm font-semibold text-gray-700 mb-1 text-center">Baños</label><input type="number" name="bathrooms" min="0" value={formData.bathrooms} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded outline-none text-center bg-gray-50" /></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1 text-center">Ambientes</label><input type="number" name="environments" min="0" value={formData.environments} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none text-center bg-input transition-colors" /></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1 text-center">Dormitorios</label><input type="number" name="bedrooms" min="0" value={formData.bedrooms} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none text-center bg-input transition-colors" /></div>
+                            <div><label className="block text-sm font-semibold text-foreground/80 mb-1 text-center">Baños</label><input type="number" name="bathrooms" min="0" value={formData.bathrooms} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none text-center bg-input transition-colors" /></div>
                         </div>
-                        <div><label className="block text-sm font-semibold text-gray-700 mb-1">Características (Separadas por coma)</label><input type="text" name="features" value={formData.features} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded focus:ring-1 focus:ring-[#8B1A1A] outline-none bg-gray-50" /></div>
+                        <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Características (Separadas por coma)</label><input type="text" name="features" value={formData.features} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors" /></div>
                     </div>
                 </div>
 
-                <div className="p-8">
-                    <h2 className="text-xl font-semibold text-[#8B1A1A] mb-6 flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-[#8B1A1A] text-white flex items-center justify-center text-sm">4</span>
+                <div className="p-8 border-b border-border-card bg-foreground/[0.02]">
+                    <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2 font-serif">
+                        <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-sans">4</span>
                         Galería de Fotos
                     </h2>
 
-                    <div className="mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-gray-300 border-dashed rounded bg-gray-50 hover:bg-gray-100 transition cursor-pointer relative">
+                    <div className="mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-border-input border-dashed rounded-lg bg-input hover:bg-border-card transition cursor-pointer relative">
                         <div className="space-y-2 text-center">
-                            <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            <div className="flex text-sm text-gray-600 justify-center">
-                                <span className="relative rounded-md font-semibold text-[#8B1A1A] hover:text-red-700">Hacé clic para subir fotos</span>
+                            <svg className="mx-auto h-12 w-12 text-foreground/40" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <div className="flex text-sm text-foreground/60 justify-center">
+                                <span className="relative rounded-md font-semibold text-primary hover:underline">Hacé clic para subir fotos</span>
                             </div>
-                            <p className="text-xs text-gray-500">Podés arrastrar para reordenar. La primera foto será la Portada.</p>
+                            <p className="text-xs text-foreground/40">Podés arrastrar para reordenar. La primera foto será la Portada.</p>
                         </div>
                         <input type="file" multiple accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                     </div>
@@ -227,12 +228,12 @@ export default function NuevaPropiedad() {
                                     onDragStart={() => handleDragStart(index)}
                                     onDragOver={handleDragOver}
                                     onDrop={() => handleDrop(index)}
-                                    className={`relative group rounded-md overflow-hidden bg-gray-200 aspect-square shadow-sm cursor-move border-2 transition-all ${draggedIdx === index ? 'opacity-50 border-dashed border-gray-500' : 'border-transparent hover:border-[#8B1A1A]'}`}
+                                    className={`relative group rounded-md overflow-hidden bg-input aspect-square shadow-sm cursor-move border-2 transition-all ${draggedIdx === index ? 'opacity-50 border-dashed border-foreground/50' : 'border-transparent hover:border-primary'}`}
                                 >
                                     <img src={img.preview} alt="Preview" className="w-full h-full object-cover pointer-events-none" />
 
                                     {index === 0 && (
-                                        <div className="absolute top-0 left-0 w-full bg-[#8B1A1A]/90 text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider backdrop-blur-sm">
+                                        <div className="absolute top-0 left-0 w-full bg-primary/90 text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider backdrop-blur-sm">
                                             Portada
                                         </div>
                                     )}
@@ -246,9 +247,9 @@ export default function NuevaPropiedad() {
                     )}
                 </div>
 
-                <div className="p-8 bg-gray-50 border-t border-gray-200 flex justify-end gap-4 rounded-b-sm">
-                    <Link href="/admin/propiedades" className="px-6 py-3 text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 font-semibold rounded transition shadow-sm">Cancelar</Link>
-                    <button type="submit" disabled={loading} className="px-8 py-3 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold tracking-wide rounded transition shadow-md disabled:opacity-50 flex items-center gap-2">
+                <div className="p-8 bg-card border-t border-border-card flex justify-end gap-4">
+                    <Link href="/admin/propiedades" className="px-6 py-3 text-foreground bg-input border border-border-input hover:bg-border-card font-semibold rounded-lg transition shadow-sm">Cancelar</Link>
+                    <button type="submit" disabled={loading} className="px-8 py-3 bg-primary hover:bg-primary-hover text-white font-bold tracking-wide rounded-lg transition shadow-md disabled:opacity-50 flex items-center gap-2">
                         {loading ? 'Subiendo...' : 'Guardar y Publicar'}
                     </button>
                 </div>

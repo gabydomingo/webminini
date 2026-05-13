@@ -16,7 +16,7 @@ const sedesData = [
         id: 1,
         nombre: "Administración",
         direccion: "Chiozza 1851 Local 1, San Bernardo",
-        horario: "Lun. a Sáb: 09:00-13:00 / 17:00-20:00",
+        horario: "Lunes a Viernes: 10:30-13:00 / 16:30-20:00",
         telefonos: [
             { label: "WhatsApp / Oficina", num: "+54 9 11 5713-4054", link: "5491157134054" },
             { label: "WhatsApp / Consultas", num: "2257 63-8709", link: "5492257638709" }
@@ -26,7 +26,7 @@ const sedesData = [
         id: 2,
         nombre: "Inmobiliaria Minini",
         direccion: "Chiozza 1796, San Bernardo",
-        horario: "Lun. a Sáb: 09:30 - 20:30 (Corrido)",
+        horario: "Lunes a Viernes: 10:30-13:00 / 16:30-20:00",
         telefonos: [
             { label: "WhatsApp Ventas", num: "2257 30-9051", link: "5492257309051" },
             { label: "WhatsApp Ventas", num: "2257 30-7064", link: "5492257307064" }

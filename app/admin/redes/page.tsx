@@ -130,12 +130,12 @@ export default function RedesYVideos() {
         }
     }
 
-    if (fetching) return <div className="p-8 text-gray-500">Cargando configuraciones...</div>
+    if (fetching) return <div className="p-8 text-foreground/50 font-sans">Cargando configuraciones...</div>
 
     return (
-        <div className="max-w-5xl mx-auto pb-12">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Feed de Videos (Home)</h1>
-            <p className="text-gray-500 mb-8">Armá tu lista de reproducción. Los usuarios podrán deslizar para verlos todos.</p>
+        <div className="max-w-5xl mx-auto pb-12 font-sans">
+            <h1 className="text-3xl font-bold text-black mb-2">Feed de Videos (Home)</h1>
+            <p className="text-black mb-8">Armá tu lista de reproducción. Los usuarios podrán deslizar para verlos todos.</p>
 
             {successMsg && (
                 <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm font-medium transition-all">
@@ -146,18 +146,18 @@ export default function RedesYVideos() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                 {/* ── COLUMNA IZQ: Añadir Nuevo Video ── */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-fit">
-                    <div className="bg-gray-50 p-4 border-b border-gray-200 font-bold text-[#8B1A1A]">
+                <div className="bg-card rounded-xl shadow-sm border border-border-card overflow-hidden h-fit">
+                    <div className="bg-input p-4 border-b border-border-card font-bold text-[#8B1A1A]">
                         Agregar Video a la Lista
                     </div>
                     <div className="p-6 space-y-6">
                         <div className="flex gap-4">
-                            <label className={`flex-1 border-2 rounded-lg p-3 cursor-pointer transition flex items-center gap-2 ${newType === 'tiktok' ? 'border-[#8B1A1A] bg-red-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                <input type="radio" checked={newType === 'tiktok'} onChange={() => setNewType('tiktok')} className="w-4 h-4 text-[#8B1A1A]" />
+                            <label className={`flex-1 border-2 rounded-lg p-3 cursor-pointer transition flex items-center gap-2 ${newType === 'tiktok' ? 'border-[#8B1A1A] bg-primary/10 text-foreground' : 'border-border-input hover:bg-input text-foreground/80'}`}>
+                                <input type="radio" checked={newType === 'tiktok'} onChange={() => setNewType('tiktok')} className="w-4 h-4 text-[#8B1A1A] accent-[#8B1A1A]" />
                                 <span className="font-semibold text-sm">Link TikTok</span>
                             </label>
-                            <label className={`flex-1 border-2 rounded-lg p-3 cursor-pointer transition flex items-center gap-2 ${newType === 'mp4' ? 'border-[#8B1A1A] bg-red-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                <input type="radio" checked={newType === 'mp4'} onChange={() => setNewType('mp4')} className="w-4 h-4 text-[#8B1A1A]" />
+                            <label className={`flex-1 border-2 rounded-lg p-3 cursor-pointer transition flex items-center gap-2 ${newType === 'mp4' ? 'border-[#8B1A1A] bg-primary/10 text-foreground' : 'border-border-input hover:bg-input text-foreground/80'}`}>
+                                <input type="radio" checked={newType === 'mp4'} onChange={() => setNewType('mp4')} className="w-4 h-4 text-[#8B1A1A] accent-[#8B1A1A]" />
                                 <span className="font-semibold text-sm">Archivo MP4</span>
                             </label>
                         </div>
@@ -167,19 +167,19 @@ export default function RedesYVideos() {
                                 <input
                                     type="url" value={newUrl} onChange={(e) => setNewUrl(e.target.value)}
                                     placeholder="Ej: https://www.tiktok.com/@user/video/123"
-                                    className="w-full p-2.5 border border-gray-300 rounded focus:outline-none focus:border-[#8B1A1A] text-sm"
+                                    className="w-full p-2.5 bg-input border border-border-input text-foreground rounded-lg focus:outline-none focus:border-[#8B1A1A] text-sm transition-colors"
                                 />
                             ) : (
                                 <input
                                     type="file" accept="video/mp4,video/webm" onChange={handleFileChange}
-                                    className="w-full p-2 border border-gray-300 rounded text-sm bg-white"
+                                    className="w-full p-2 bg-input border border-border-input text-foreground rounded-lg text-sm transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
                                 />
                             )}
                         </div>
 
                         <button
                             type="button" onClick={handleAddToList}
-                            className="w-full py-2.5 bg-gray-900 hover:bg-black text-white font-bold rounded transition text-sm"
+                            className="w-full py-2.5 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 dark:text-black text-white font-bold rounded-lg transition text-sm shadow-md"
                         >
                             + Añadir a la lista
                         </button>
@@ -187,32 +187,32 @@ export default function RedesYVideos() {
                 </div>
 
                 {/* ── COLUMNA DER: Lista Actual y Guardado ── */}
-                <form onSubmit={handleSave} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                    <div className="bg-gray-50 p-4 border-b border-gray-200 font-bold flex justify-between items-center">
-                        <span className="text-gray-800">Tu Lista de Reproducción ({videos.length})</span>
+                <form onSubmit={handleSave} className="bg-card rounded-xl shadow-sm border border-border-card overflow-hidden flex flex-col">
+                    <div className="bg-input p-4 border-b border-border-card font-bold flex justify-between items-center text-foreground">
+                        <span>Tu Lista de Reproducción ({videos.length})</span>
                     </div>
 
-                    <div className="p-6 flex-1 bg-gray-50/50">
+                    <div className="p-6 flex-1 bg-foreground/[0.02]">
                         {videos.length === 0 ? (
-                            <div className="text-center text-gray-400 py-10 text-sm italic">
+                            <div className="text-center text-foreground/40 py-10 text-sm italic">
                                 La lista está vacía. Agregá videos desde el panel izquierdo.
                             </div>
                         ) : (
                             <ul className="space-y-3">
                                 {videos.map((vid, index) => (
-                                    <li key={vid.id} className="flex justify-between items-center bg-white p-3 border border-gray-200 rounded shadow-sm">
+                                    <li key={vid.id} className="flex justify-between items-center bg-card p-3 border border-border-card rounded-lg shadow-sm">
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <span className="font-bold text-gray-400 text-xs">{index + 1}.</span>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${vid.type === 'tiktok' ? 'bg-black text-white' : 'bg-blue-100 text-blue-800'}`}>
+                                            <span className="font-bold text-foreground/40 text-xs">{index + 1}.</span>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${vid.type === 'tiktok' ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'}`}>
                                                 {vid.type}
                                             </span>
-                                            <span className="text-xs text-gray-600 truncate max-w-[200px]" title={vid.url}>
+                                            <span className="text-xs text-foreground/80 truncate max-w-[200px]" title={vid.url}>
                                                 {vid.file ? vid.file.name : vid.url}
                                             </span>
                                         </div>
                                         <button
                                             type="button" onClick={() => handleRemoveFromList(vid.id)}
-                                            className="text-red-500 hover:text-red-700 text-xs font-bold"
+                                            className="text-red-500 hover:text-red-700 dark:text-red-400 text-xs font-bold transition-colors"
                                         >
                                             Borrar
                                         </button>
@@ -222,10 +222,10 @@ export default function RedesYVideos() {
                         )}
                     </div>
 
-                    <div className="p-6 border-t border-gray-100">
+                    <div className="p-6 border-t border-border-card">
                         <button
                             type="submit" disabled={loading || videos.length === 0}
-                            className="w-full py-3 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold rounded shadow-sm transition disabled:opacity-50 text-sm tracking-wide uppercase"
+                            className="w-full py-3 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold rounded-lg shadow-md transition disabled:opacity-50 text-sm tracking-wide uppercase flex items-center justify-center gap-2"
                         >
                             {loading ? 'Subiendo archivos y guardando...' : 'Guardar y Publicar en la Web'}
                         </button>
