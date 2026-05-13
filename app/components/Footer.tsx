@@ -62,7 +62,20 @@ export default function Footer() {
                             <div>
                                 <p className="font-bold text-white text-sm mb-1 font-serif">Román Minini</p>
                                 <p>Martillero y Corredor Público</p>
-                                <p>Tomo III - Folio 359 | Mat. N° 1057</p>
+                                <a href="https://comado.com.ar/inmobiliaria/inmobiliaria-1590/" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                    Tomo III - Folio 359 | Mat. N° 1057
+                                </a>
+                                <br />
+                                <a href="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/screencapture-dppj-ui-mjus-gba-gob-ar-dppj-cn-ui-p-adm-consorcios-2026-05-13-20_29_58.png" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                    Matricula de administrador N° 9 | Legajo  6/273928
+                                </a>
+                            </div>
+                            <div>
+                                <p className="font-bold text-white text-sm mb-1 font-serif">Juan Minini</p>
+                                <p>Martillero y Corredor Público</p>
+                                <a href="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/screencapture-dppj-ui-mjus-gba-gob-ar-dppj-cn-ui-p-adm-consorcios-2026-05-13-20_42_28.png" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                    Matricula de administrador N° 20 | Legajo  4/274245
+                                </a>
                             </div>
                         </div>
                     </div>
