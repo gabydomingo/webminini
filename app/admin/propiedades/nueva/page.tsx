@@ -180,7 +180,7 @@ export default function NuevaPropiedad() {
                         </div>
                         <div><label className="block text-sm font-semibold text-foreground/80 mb-1">Calle y Altura *</label><input type="text" name="location" required value={formData.location} onChange={handleChange} className="w-full p-3 border border-border-input text-foreground rounded-lg outline-none bg-input transition-colors" /></div>
                         <div className="bg-card p-5 rounded-lg border border-border-card shadow-sm">
-                            <div className="flex justify-between items-center mb-4"><label className="block text-sm font-semibold text-foreground/80">Ubicación exacta en el mapa</label><button type="button" onClick={handleGetLocation} className="text-xs bg-input hover:bg-border-card text-foreground py-1.5 px-3 rounded flex items-center gap-1 font-medium transition-colors">📍 Usar mi ubicación</button></div>
+                            {/* <div className="flex justify-between items-center mb-4"><label className="block text-sm font-semibold text-foreground/80">Ubicación exacta en el mapa</label><button type="button" onClick={handleGetLocation} className="text-xs bg-input hover:bg-border-card text-foreground py-1.5 px-3 rounded flex items-center gap-1 font-medium transition-colors">📍 Usar mi ubicación</button></div> */}
                             <MapPicker lat={formData.latitude} lng={formData.longitude} onChange={(lat, lng) => setFormData({ ...formData, latitude: lat, longitude: lng })} />
                         </div>
                     </div>
