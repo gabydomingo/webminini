@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // 2. Escuchador de estado (¡Esto previene el error del Refresh Token!)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (event === 'SIGNED_OUT' || event === 'USER_DELETED' || !session) {
+        if (event === 'SIGNED_OUT' || !session) {
           // Si el token es inválido o el usuario se deslogueó, lo mandamos al login
           if (pathname !== '/admin/login') {
              router.push('/admin/login')
