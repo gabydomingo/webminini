@@ -14,23 +14,23 @@ export const metadata: Metadata = {
 const socios = [
   {
     nombre: "Román Minini",
-    rol: "Fundador y Referente",
+    rol: "Martillero y Corredor Público",
     descripcion:
-      "Principal responsable y referente de la empresa. Lidera el desarrollo general de la marca manteniendo los valores de transparencia y esfuerzo con los que inició este proyecto.",
+      "Fundador de la empresa y referente del rubro con más de 25 años de trayectoria. Román es quien construyó desde cero tanto la inmobiliaria como la administración de consorcios, dos pilares que hoy son sinónimo de confianza en la zona. Su experiencia, seriedad y conocimiento del mercado son la base sobre la que se apoya todo el equipo.",
     imagen: null,
   },
   {
     nombre: "Juan Minini",
-    rol: "Martillero y Corredor Público",
+    rol: "Administrador de Consorcios Matriculado",
     descripcion:
-      "Lidera el funcionamiento diario y la gestión administrativa-operativa. Aporta profesionalismo técnico y el compromiso de continuar el legado familiar.",
+      "Hijo de Román y continuador del legado familiar, Juan lidera hoy la administración de consorcios con más de 40 edificios a su cargo. Creció dentro del negocio, aprendió de los mejores y construyó su propio camino: hoy es referente local en administración, reconocido por su compromiso, organización y cercanía con cada consorcio que gestiona.",
     imagen: null,
   },
   {
     nombre: "Franco Mauri",
-    rol: "Socio Sector Inmobiliario",
+    rol: "Ventas Inmobiliarias",
     descripcion:
-      "Aporta una mirada moderna, dinámica y una impronta joven al crecimiento de la marca, especializado en el asesoramiento y gestión de propiedades.",
+      "Amigo y socio de la familia Minini desde hace 4 años, Franco es la cara dinámica e innovadora del sector de ventas. Próximo a obtener su matrícula de Martillero y Corredor Público, combina la energía y el enfoque moderno de la nueva generación con la solidez y los valores que aprendió junto a Román. En ventas, es quien convierte oportunidades en resultados.",
     imagen: null,
   },
 ];

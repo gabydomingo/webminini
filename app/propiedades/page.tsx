@@ -94,7 +94,6 @@ function PropiedadesContent() {
             if (optionsData) {
                 const grouped = optionsData.reduce((acc, curr) => {
                     if (!acc[curr.category]) acc[curr.category] = [];
-                    // 👇 CORRECCIÓN: Filtramos los duplicados automáticamente
                     if (!acc[curr.category].includes(curr.value)) {
                         acc[curr.category].push(curr.value);
                     }
@@ -110,7 +109,8 @@ function PropiedadesContent() {
             const { data: propData } = await supabase
                 .from('properties')
                 .select('*')
-                .neq('status', 'oculto')
+                // 👇 FILTRO ESTRICTO: Solo trae las "disponibles"
+                .eq('status', 'disponible')
                 .order('created_at', { ascending: false });
 
             if (propData) setProperties(propData);

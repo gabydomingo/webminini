@@ -242,14 +242,17 @@ export default function AdminPropertiesList() {
                                             <select
                                                 value={property.status?.toLowerCase()}
                                                 onChange={(e) => handleStatusChange(property.id, e.target.value)}
-                                                className={`text-xs font-bold uppercase tracking-wider rounded-full px-2 py-1 outline-none cursor-pointer border ${property.status?.toLowerCase() === 'disponible' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                        property.status?.toLowerCase() === 'oculto' ? 'bg-gray-100 text-gray-500 border-gray-200' :
-                                                            'bg-yellow-50 text-yellow-700 border-yellow-200'
-                                                    }`}
+                                                className={`text-xs font-bold uppercase tracking-wider rounded-full px-2 py-1 outline-none cursor-pointer border ${
+                                                    property.status?.toLowerCase() === 'disponible' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                    property.status?.toLowerCase() === 'oculto' ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                                                    property.status?.toLowerCase() === 'alquilado' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                    'bg-yellow-50 text-yellow-700 border-yellow-200' // Para reservado y vendido
+                                                }`}
                                             >
                                                 <option value="disponible">Disponible</option>
                                                 <option value="reservado">Reservado</option>
-                                                <option value="vendido">Vendido / Alq.</option>
+                                                <option value="vendido">Vendido</option>
+                                                <option value="alquilado">Alquilado</option>
                                                 <option value="oculto">Oculto</option>
                                             </select>
                                         </td>
