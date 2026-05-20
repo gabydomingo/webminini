@@ -94,7 +94,10 @@ function PropiedadesContent() {
             if (optionsData) {
                 const grouped = optionsData.reduce((acc, curr) => {
                     if (!acc[curr.category]) acc[curr.category] = [];
-                    acc[curr.category].push(curr.value);
+                    // 👇 CORRECCIÓN: Filtramos los duplicados automáticamente
+                    if (!acc[curr.category].includes(curr.value)) {
+                        acc[curr.category].push(curr.value);
+                    }
                     return acc;
                 }, {} as Record<string, string[]>);
                 setOptions(grouped);
@@ -107,7 +110,6 @@ function PropiedadesContent() {
             const { data: propData } = await supabase
                 .from('properties')
                 .select('*')
-                // 👇 ESTO FILTRA LAS OCULTAS 👇
                 .neq('status', 'oculto')
                 .order('created_at', { ascending: false });
 
@@ -222,6 +224,7 @@ function PropiedadesContent() {
                         <div>
                             <h4 className="font-bold text-sm text-foreground/80 mb-3 uppercase tracking-wider">Operación</h4>
                             <div className="flex flex-wrap gap-2">
+                                {/* 👇 CORRECCIÓN: Key segura (con idx) */}
                                 {options.tipo_operacion?.map((op, idx) => (
                                     <button
                                         key={`op-${idx}`}
@@ -250,7 +253,8 @@ function PropiedadesContent() {
                                     onChange={e => { setPropType(e.target.value); resetPage(); }}
                                 >
                                     <option value="">Cualquier tipo</option>
-                                    {options.tipo_propiedad?.map(t => <option key={t} value={t}>{t}</option>)}
+                                    {/* 👇 CORRECCIÓN: Key segura (con idx) */}
+                                    {options.tipo_propiedad?.map((t, idx) => <option key={`prop-${idx}`} value={t}>{t}</option>)}
                                 </select>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -268,7 +272,8 @@ function PropiedadesContent() {
                                     onChange={e => { setLoc(e.target.value); resetPage(); }}
                                 >
                                     <option value="">Todas las localidades</option>
-                                    {options.localidad?.map(l => <option key={l} value={l}>{l}</option>)}
+                                    {/* 👇 CORRECCIÓN: Key segura (con idx) */}
+                                    {options.localidad?.map((l, idx) => <option key={`loc-${idx}`} value={l}>{l}</option>)}
                                 </select>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>

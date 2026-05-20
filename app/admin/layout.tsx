@@ -11,16 +11,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // 1. Chequeo inicial
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session }, error } = await supabase.auth.getSession()
 
-      if (!session && pathname !== '/admin/login') {
-        router.push('/admin/login')
+      if (error || !session) {
+        if (pathname !== '/admin/login') {
+          router.push('/admin/login')
+        }
       } else {
         setLoading(false)
       }
     }
+    
     checkAuth()
+
+    // 2. Escuchador de estado (¡Esto previene el error del Refresh Token!)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_OUT' || event === 'USER_DELETED' || !session) {
+          // Si el token es inválido o el usuario se deslogueó, lo mandamos al login
+          if (pathname !== '/admin/login') {
+             router.push('/admin/login')
+          }
+        }
+      }
+    )
+
+    // Limpiamos el escuchador cuando el componente se desmonta
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [router, pathname])
 
   const handleLogout = async () => {
@@ -28,8 +49,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/admin/login')
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500 font-sans">Verificando credenciales...</div>
+  // Pantalla de carga mientras verifica
+  if (loading && pathname !== '/admin/login') {
+      return (
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500 font-sans">
+              Verificando credenciales...
+          </div>
+      )
+  }
 
+  // Si estamos en la página de login, no mostramos el Sidebar
   if (pathname === '/admin/login') {
     return <>{children}</>
   }

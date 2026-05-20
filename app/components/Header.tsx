@@ -12,6 +12,7 @@ const navLinks = [
   { label: "Sobre nosotros", href: "/sobre-nosotros" },
   { label: "Contacto", href: "/contacto" },
   { label: "Administración", href: "/consorcio" },
+  { label: "Operaciones Concretadas", href: "/concretadas" }
 ];
 
 export default function Header() {
@@ -69,9 +70,6 @@ export default function Header() {
               {/* Desktop Nav */}
               <nav className="hidden md:flex items-center gap-1">
                 {navLinks.map((link) => {
-                  // Determinamos si el link está activo. 
-                  // Si es "/", tiene que ser exacto. Si es otro (ej: "/propiedades"), 
-                  // chequeamos que la ruta empiece con eso para que siga activo al ver el detalle de una propiedad.
                   const isActive = link.href === "/"
                     ? pathname === "/"
                     : pathname.startsWith(link.href);
@@ -144,7 +142,6 @@ export default function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  // En mobile, le damos color primario si está activo
                   className={`py-3 font-serif text-sm font-medium border-b border-primary/10 dark:border-primary/20 last:border-0 hover:text-primary hover:pl-2 transition-all duration-200 ${isActive ? "text-primary pl-2" : "text-foreground/90"
                     }`}
                 >
