@@ -14,16 +14,16 @@ export const metadata: Metadata = {
 const socios = [
   {
     nombre: "Román Minini",
-    rol: "Martillero y Corredor Público",
+    rol: " Martillero, Corredor Público y administrador de consorcios",
     descripcion:
-      "Fundador de la empresa y referente del rubro con más de 25 años de trayectoria. Román es quien construyó desde cero tanto la inmobiliaria como la administración de consorcios, dos pilares que hoy son sinónimo de confianza en la zona. Su experiencia, seriedad y conocimiento del mercado son la base sobre la que se apoya todo el equipo.",
+      "Fundador de Minini Administración de Propiedades e Inmobiliaria. Con más de 25 años de trayectoria, Román construyó desde cero una marca basada en la confianza, la seriedad y el trato cercano. Su experiencia en el mercado inmobiliario y en la administración de consorcios es el pilar sobre el que hoy se desarrolla todo el equipo de trabajo.",
     imagen: null,
   },
   {
     nombre: "Juan Minini",
-    rol: "Administrador de Consorcios Matriculado",
+    rol: "Martillero, Corredor Público y administrador de Consorcios",
     descripcion:
-      "Hijo de Román y continuador del legado familiar, Juan lidera hoy la administración de consorcios con más de 40 edificios a su cargo. Creció dentro del negocio, aprendió de los mejores y construyó su propio camino: hoy es referente local en administración, reconocido por su compromiso, organización y cercanía con cada consorcio que gestiona.",
+      "Continuador del proyecto familiar y actual responsable del área de administración, Juan lidera la gestión de más de 40 consorcios en la zona. Formado desde joven dentro de la empresa, combina la experiencia adquirida junto a Román con una visión moderna, organizada y cercana. Como Martillero y Corredor Público, aporta además una mirada integral del mercado inmobiliario, enfocada en la transparencia, la resolución y el acompañamiento permanente a propietarios e inversores.",
     imagen: null,
   },
   {
@@ -59,7 +59,7 @@ const valores = [
     ),
     titulo: "Transparencia",
     texto:
-      "Garantía absoluta de que su patrimonio y dinero se encuentran a buen resguardo, con una gestión clara en cada etapa.",
+      "Garantía absoluta de que su patrimonio y dinero de nustros clientes se encuentran a buen resguardo, con una gestión clara en cada etapa.",
   },
   {
     icono: (
@@ -112,14 +112,14 @@ export default function SobreNosotros() {
         {/* ── HERO ── */}
         <section className="text-center max-w-3xl mx-auto mb-16">
           <p className="text-sm font-sans uppercase tracking-widest text-primary mb-4 font-bold">
-            Sobre nosotros
+            Quienes somos
           </p>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-6 text-foreground">
-            Nuestra Historia
+            Sobre nosotros
           </h1>
           <p className="font-sans text-base md:text-lg text-foreground/70 leading-relaxed">
-            "Porque conocemos, vivimos y disfrutamos nuestra ciudad, trabajamos
-            todos los días para verla crecer y mejorar."
+            Porque conocemos, vivimos y disfrutamos nuestra ciudad, trabajamos
+            todos los días para verla crecer y mejorar.
           </p>
         </section>
 
@@ -133,7 +133,7 @@ export default function SobreNosotros() {
         {/* ── SOCIOS FUNDADORES ── */}
         <section className="mb-20 max-w-5xl mx-auto">
           <h2 className="font-serif text-3xl md:text-4xl font-black text-center mb-12 text-foreground">
-            Nuestro Equipo Directivo
+            Nuestro equipo directivo
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -196,7 +196,7 @@ export default function SobreNosotros() {
             {/* Columna de Texto: Contenido Profesional Actualizado */}
             <div className="space-y-6 font-sans text-sm md:text-base text-foreground/80 leading-relaxed">
               <h2 className="font-serif text-3xl md:text-4xl font-black mb-6 text-foreground">
-                Nuestra Historia
+                Nuestra historia
               </h2>
 
               <p>
@@ -314,7 +314,7 @@ export default function SobreNosotros() {
         <section className="bg-card border border-border-card rounded-3xl py-16 px-6 mb-20 shadow-sm">
           <div className="max-w-5xl mx-auto">
             <h2 className="font-serif text-3xl md:text-4xl font-black text-center mb-12 text-foreground">
-              Nuestros Pilares
+              Nuestros pilares
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
               {valores.map((v) => (
@@ -340,11 +340,11 @@ export default function SobreNosotros() {
         {/* ── CTA FINAL ── */}
         <section className="text-center max-w-2xl mx-auto bg-primary text-white p-10 md:p-12 rounded-3xl shadow-xl shadow-primary/20">
           <h2 className="font-serif text-3xl md:text-4xl font-black mb-4">
-            ¿Hablamos sobre su próxima inversión?
+            ¿Hablamos sobre tu próxima inversión?
           </h2>
           <p className="font-sans text-base text-white/90 mb-8 leading-relaxed">
-            Nuestro equipo de especialistas está listo para asesorarlo. <br className="hidden md:block" />
-                        Nuestra meta es que año a año sus ladrillos valgan cada vez más.
+            Nuestro equipo de especialistas está listo para asesorarte. <br className="hidden md:block" />
+                        Nuestra meta es que año a año tus ladrillos valgan cada vez más.
           </p>
           <a
             href="/contacto"

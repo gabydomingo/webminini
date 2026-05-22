@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "../lib/supabase"; // Ajustá si la ruta es diferente
+import { supabase } from "../lib/supabase"; 
 
 // ─── Íconos ───────────────────────────────────────────────────────────────────
 function TikTokIcon({ className }: { className?: string }) {
@@ -234,13 +234,13 @@ export default function SocialSection() {
                         </p>
 
                         <h2 className="font-serif text-4xl md:text-5xl lg:text-[52px] font-bold text-foreground leading-[1.1] mb-8">
-                            Manténgase conectado{" "}
+                            Conectá{" "}
                             <br className="hidden md:block" />
-                            con lo mejor de la costa.
+                            con lo mejor de La Costa.
                         </h2>
 
                         <p className="text-foreground/70 text-lg leading-relaxed mb-10 font-sans">
-                            Síganos en las redes sociales para disfrutar de visitas exclusivas a
+                            Seguinos en redes sociales para disfrutar de visitas exclusivas a
                             propiedades, información destacada, secretos del mercado inmobiliario y
                             una mirada distinta de las mejores propiedades que tenemos para ofrecerte.
                         </p>
@@ -263,7 +263,7 @@ export default function SocialSection() {
                                 className="flex items-center justify-center gap-3 px-8 py-4 bg-transparent border-2 border-primary hover:bg-primary text-primary hover:text-white font-bold text-sm tracking-widest uppercase rounded transition-all duration-300 hover:shadow-xl hover:-translate-y-1 font-sans"
                             >
                                 <InstagramIcon className="w-5 h-5" />
-                                Feed de Instagram
+                                Minini en Instagram
                             </Link>
                         </div>
                     </div>

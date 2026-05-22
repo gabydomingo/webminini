@@ -89,8 +89,8 @@ export default function AdministracionPage() {
                     <p className="text-sm font-bold uppercase tracking-[0.3em] text-primary mb-4 font-sans">
                         Desde 2002 brindando confianza
                     </p>
-                    <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-6 text-foreground italic">
-                        Administración de Edificios
+                    <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-6 text-foreground ">
+                        Administración de edificios
                     </h1>
                     <p className="font-sans text-base md:text-lg text-foreground/70 leading-relaxed">
                         Contamos con más de dos décadas de trayectoria ininterrumpida en el Partido de La Costa. 
@@ -103,7 +103,7 @@ export default function AdministracionPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <ServiceCard 
                             icon={<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />}
-                            title="Expensas Claras"
+                            title="Expensas claras"
                             desc="Liquidaciones detalladas enviadas por email y disponibles online 24/7."
                         />
                         <ServiceCard 
@@ -170,16 +170,16 @@ export default function AdministracionPage() {
                             </div>
                             <div className="space-y-3 p-6 bg-input/50 rounded-2xl border border-border-card">
                                 <h4 className="font-bold text-lg text-primary">Transparencia</h4>
-                                <p className="text-sm text-foreground/70 leading-relaxed">Sin grises. Usted sabrá exactamente a dónde va destinado cada peso de sus expensas mediante rendiciones mensuales.</p>
+                                <p className="text-sm text-foreground/70 leading-relaxed">Sin grises. Sabrás exactamente a dónde va destinado cada peso de tus expensas mediante rendiciones mensuales.</p>
                             </div>
                             <div className="space-y-3 p-6 bg-input/50 rounded-2xl border border-border-card">
                                 <h4 className="font-bold text-lg text-primary">Respuesta</h4>
-                                <p className="text-sm text-foreground/70 leading-relaxed">Atención personalizada para urgencias fuera de horario y oficinas físicas céntricas en San Bernardo.</p>
+                                <p className="text-sm text-foreground/70 leading-relaxed">Atención personalizada para urgencias fuera de horario y oficinas en San Bernardo.</p>
                             </div>
                         </div>
 
                         <div className="mt-12 pt-10 border-t border-border-card">
-                            <p className="text-foreground/80 mb-6 font-medium">¿Su edificio necesita una administración ágil y tecnológica?</p>
+                            <p className="text-foreground/80 mb-6 font-medium">¿Tu edificio necesita una administración ágil y confiable?</p>
                             <Link
                                 href="/contacto"
                                 className="inline-flex items-center gap-3 bg-primary hover:bg-primary-hover text-white font-bold text-sm tracking-widest uppercase px-10 py-4 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/20"

@@ -246,7 +246,7 @@ export default function AdminPropertiesList() {
                                                     property.status?.toLowerCase() === 'disponible' ? 'bg-green-50 text-green-700 border-green-200' :
                                                     property.status?.toLowerCase() === 'oculto' ? 'bg-gray-100 text-gray-500 border-gray-200' :
                                                     property.status?.toLowerCase() === 'alquilado' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                    'bg-yellow-50 text-yellow-700 border-yellow-200' // Para reservado y vendido
+                                                    'bg-yellow-50 text-yellow-700 border-yellow-200' 
                                                 }`}
                                             >
                                                 <option value="disponible">Disponible</option>

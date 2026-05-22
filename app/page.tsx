@@ -53,7 +53,7 @@ export default async function HomePage() {
 
           <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center px-6 lg:px-16 pt-10 pb-32 max-w-7xl mx-auto w-full">
             <h1 className="font-serif text-white text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-2xl mx-auto">
-              Lo que buscas,
+              Lo que buscás,
               <br />
               <span className="text-secondary">lo tenemos.</span>
             </h1>
@@ -72,7 +72,7 @@ export default async function HomePage() {
                 href="/contacto"
                 className="font-serif px-7 py-3.5 border-2 border-white/60 hover:border-white text-white font-semibold text-sm tracking-widest uppercase rounded-sm transition-all duration-200 backdrop-blur-sm hover:bg-white/10"
               >
-                Ponte en contacto
+                contactar
               </Link>
             </div>
           </div>

@@ -24,7 +24,7 @@ const sedesData = [
     },
     {
         id: 2,
-        nombre: "Inmobiliaria Minini",
+        nombre: "Inmobiliaria",
         direccion: "Chiozza 1796, San Bernardo",
         horario: "Lunes a Viernes: 10:30-13:00 / 16:30-20:00",
         telefonos: [
@@ -70,9 +70,9 @@ export default function ContactoClient() {
                 <div className="max-w-6xl mx-auto">
 
                     <div className="text-center mb-11">
-                        <h1 className="text-4xl md:text-5xl font-bold text-foreground font-serif mb-4">Ponte en contacto</h1>
+                        <h1 className="text-4xl md:text-5xl font-bold text-foreground font-serif mb-4">Conversemos</h1>
                         <p className="text-foreground/60 max-w-2xl mx-auto font-sans text-sm md:text-base">
-                            Comunícate directamente con nuestras oficinas o envíanos tu consulta para un asesoramiento personalizado.
+                            Comunicate directamente con nuestras oficinas o envíanos tu consulta para un asesoramiento personalizado.
                         </p>
                     </div>
 
@@ -123,7 +123,7 @@ export default function ContactoClient() {
                         </div>
 
                         <div className="bg-card border border-border-card p-8 md:p-10 rounded-2xl shadow-sm">
-                            <h3 className="text-2xl font-bold text-foreground font-serif mb-8">Envíanos una consulta</h3>
+                            <h3 className="text-2xl font-bold text-foreground font-serif mb-8">Envianos tu consulta</h3>
 
                             {status === "success" && (
                                 <div className="mb-6 p-4 bg-green-500/10 text-green-600 border border-green-500/20 rounded-lg text-sm font-sans">
