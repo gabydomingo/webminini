@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { supabase } from "../lib/supabase"; // Ajusta la ruta si es necesario
+import { supabase } from "../lib/supabase"; 
 import Header from "../components/Header";
 import PropertyCard from "../components/PropertyCard";
 import { Property } from "../types";

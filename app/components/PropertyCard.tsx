@@ -37,18 +37,18 @@ export default function PropertyCard({ property }: { property: Property }) {
         <Link href={`/propiedades/${property.id}`} className="group block h-full">
             <div className="bg-card border border-border-card rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
 
-                <div className="relative h-52 overflow-hidden shrink-0">
+                <div className="relative h-52 overflow-hidden shrink-0 bg-input">
                     {img ? (
                         <Image
                             src={img}
                             alt={property.title}
                             fill
-                            // Esto optimiza la descarga según el ancho de la pantalla
+                            // 👇 OPTIMIZACIÓN CLAVE: Le dice a Next.js qué ancho descargar según el dispositivo
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
-                        <div className="w-full h-full bg-input flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center">
                             <svg className="w-12 h-12 text-foreground/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9.75L12 3l9 6.75V21H3V9.75z" />
                             </svg>
