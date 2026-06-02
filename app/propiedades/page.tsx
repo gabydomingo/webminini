@@ -109,7 +109,7 @@ function PropiedadesContent() {
             const { data: propData } = await supabase
                 .from('properties')
                 .select('*')
-                // 👇 FILTRO ESTRICTO: Solo trae las "disponibles"
+                // FILTRO ESTRICTO: Solo trae las "disponibles"
                 .eq('status', 'disponible')
                 .order('created_at', { ascending: false });
 

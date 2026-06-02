@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase"; // Ajusta la ruta si es necesario
 import Header from "../components/Header";
 import PropertyCard from "../components/PropertyCard";
 import { Property } from "../types";
 
+// ─── Paginación ───────────────────────────────────────────────────────────────
 const PROPERTIES_PER_PAGE = 12;
 
 function Pagination({ currentPage, totalPages, onPageChange }: {
@@ -31,43 +32,54 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
                 disabled={currentPage === 1}
                 className="w-10 h-10 flex items-center justify-center rounded-lg border border-border-card text-foreground/40 hover:border-primary hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
             >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
             </button>
+
             {pages.map((page, i) =>
                 page === '...' ? (
-                    <span key={`dots-${i}`} className="w-10 h-10 flex items-center justify-center text-foreground/30 text-sm select-none">···</span>
+                    <span key={`dots-${i}`} className="w-10 h-10 flex items-center justify-center text-foreground/30 text-sm select-none">
+                        ···
+                    </span>
                 ) : (
                     <button
                         key={`page-${page}`}
                         onClick={() => onPageChange(page as number)}
-                        className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${page === currentPage ? 'bg-primary text-white shadow-md' : 'text-foreground/60 hover:text-primary hover:bg-input border border-transparent hover:border-border-card'}`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${page === currentPage
+                            ? 'bg-primary text-white shadow-md'
+                            : 'text-foreground/60 hover:text-primary hover:bg-input border border-transparent hover:border-border-card'
+                            }`}
                     >
                         {page}
                     </button>
                 )
             )}
+
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="w-10 h-10 flex items-center justify-center rounded-lg border border-border-card text-foreground/40 hover:border-primary hover:text-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
             >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
             </button>
         </div>
     );
 }
 
+// ─── Componente de Contenido ──────────────────────────────────────────────────
 function SoldPropertiesContent() {
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [sortOrder, setSortOrder] = useState('recent');
+    const [sortOrder, setSortOrder] = useState('recent'); // 'recent', 'oldest'
 
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
             
-            // 👇 LÓGICA CLAVE: Traemos vendido, alquilado o reservado
             const { data: propData, error } = await supabase
                 .from('properties')
                 .select('*')
@@ -84,6 +96,7 @@ function SoldPropertiesContent() {
         loadData();
     }, []);
 
+    // Aplicar ordenamiento
     let sortedProperties = [...properties];
     if (sortOrder === 'oldest') {
         sortedProperties.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -104,6 +117,8 @@ function SoldPropertiesContent() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            
+            {/* ── ENCABEZADO Y CONTROLES ── */}
             <div className="mb-10 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border-card pb-8">
                 <div>
                     <h1 className="text-4xl md:text-5xl font-black text-foreground font-serif mb-4">
@@ -113,6 +128,7 @@ function SoldPropertiesContent() {
                         Conocé algunas de las propiedades que ya encontraron a sus nuevos dueños gracias a nuestra gestión y compromiso.
                     </p>
                 </div>
+
                 {!loading && properties.length > 0 && (
                     <div className="flex items-center justify-center md:justify-end gap-3 shrink-0">
                         <span className="text-sm font-semibold text-foreground/50 uppercase tracking-wider hidden sm:inline">Ordenar:</span>
@@ -128,12 +144,14 @@ function SoldPropertiesContent() {
                 )}
             </div>
 
+            {/* ── ESTADO: CARGANDO ── */}
             {loading && (
                 <div className="py-32 flex justify-center">
                     <div className="w-12 h-12 border-4 border-input border-t-primary rounded-full animate-spin"></div>
                 </div>
             )}
 
+            {/* ── ESTADO: VACÍO ── */}
             {!loading && properties.length === 0 && (
                 <div className="py-24 flex flex-col items-center justify-center text-center bg-card rounded-2xl border border-border-card shadow-sm px-4">
                     <svg className="w-20 h-20 text-foreground/10 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,18 +162,27 @@ function SoldPropertiesContent() {
                 </div>
             )}
 
+            {/* ── GRILLA DE RESULTADOS ── */}
             {!loading && properties.length > 0 && (
                 <>
+                    {/* Badge contador */}
                     <div className="mb-6 font-sans text-sm font-bold text-foreground/50">
                         Mostrando {paginatedProperties.length} de {properties.length} propiedades
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {paginatedProperties.map(p => {
-                            // Lógica para definir el texto de la etiqueta visual
+                            // 👇 LÓGICA DE ETIQUETAS Y COLORES 👇
                             let labelText = "Vendido";
-                            if (p.status === "alquilado") labelText = "Alquilado";
-                            // Si es reservado, lo mostramos como Vendido por petición tuya
-                            if (p.status === "reservado") labelText = "Vendido"; 
+                            let bgColor = "bg-[#8B1A1A]"; // Rojo por defecto (Vendido)
+
+                            if (p.status === "alquilado") {
+                                labelText = "Alquilado";
+                                bgColor = "bg-green-700"; // Verde para Alquilado
+                            } else if (p.status === "reservado") {
+                                labelText = "Reservado";
+                                bgColor = "bg-yellow-600"; // Amarillo oscuro para Reservado
+                            }
 
                             return (
                                 <div key={p.id} className="relative group">
@@ -163,7 +190,7 @@ function SoldPropertiesContent() {
                                     
                                     {/* Overlay Visual Dinámico */}
                                     <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                                        <span className={`${labelText === 'Alquilado' ? 'bg-green-700' : 'bg-[#8B1A1A]'} text-white px-3 py-1 rounded-sm text-xs font-black uppercase tracking-widest shadow-lg transform -rotate-2 inline-block`}>
+                                        <span className={`${bgColor} text-white px-3 py-1 rounded-sm text-xs font-black uppercase tracking-widest shadow-lg transform -rotate-2 inline-block`}>
                                             {labelText}
                                         </span>
                                     </div>
@@ -171,18 +198,28 @@ function SoldPropertiesContent() {
                             );
                         })}
                     </div>
-                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
                 </>
             )}
         </div>
     );
 }
 
+// ─── Página Principal (Export Default) ─────────────────────────────────────────
 export default function VendidasPage() {
     return (
         <div className="bg-background min-h-screen pb-10 pt-32 transition-colors duration-300">
             <Header />
-            <Suspense fallback={<div className="py-32 flex justify-center"><div className="w-12 h-12 border-4 border-input border-t-primary rounded-full animate-spin"></div></div>}>
+            <Suspense fallback={
+                <div className="py-32 flex justify-center">
+                    <div className="w-12 h-12 border-4 border-input border-t-primary rounded-full animate-spin"></div>
+                </div>
+            }>
                 <SoldPropertiesContent />
             </Suspense>
         </div>
