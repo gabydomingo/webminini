@@ -11,7 +11,7 @@ const navLinks = [
   { label: "Propiedades", href: "/propiedades" },
   { label: "Sobre nosotros", href: "/sobre-nosotros" },
   { label: "Contacto", href: "/contacto" },
-  { label: "Administración", href: "/consorcio" },
+  { label: "Administración", href: "/administrador" },
   { label: "Operaciones Concretadas", href: "/concretadas" }
 ];
 
