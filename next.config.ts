@@ -1,8 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   images: {
-    // Permitimos calidad 100 y las estándar de Next.js
-    qualities: [25, 50, 75, 100],
+    unoptimized: true, 
     remotePatterns: [
       {
         protocol: 'https',
