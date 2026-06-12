@@ -33,6 +33,9 @@ export default function PropertyCard({ property }: { property: Property }) {
     const imgArray = Array.isArray(property.images) ? property.images : [];
     const img = imgArray.length > 0 ? imgArray[0] : null;
 
+    // 🚀 SEO: Generamos un alt-text útil para Google ("Departamento en San Bernardo")
+    const seoAltText = `${property.property_type} en ${property.operation_type} - ${property.localidad}`;
+
     return (
         <Link href={`/propiedades/${property.id}`} className="group block h-full">
             <div className="bg-card border border-border-card rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
@@ -41,10 +44,11 @@ export default function PropertyCard({ property }: { property: Property }) {
                     {img ? (
                         <Image
                             src={img}
-                            alt={property.title}
+                            alt={seoAltText} // Mejor para SEO que solo el título
                             fill
-                            // 👇 OPTIMIZACIÓN CLAVE: Le dice a Next.js qué ancho descargar según el dispositivo
+                            // 🚀 Le ahorra recursos a Vercel sirviendo la imagen pequeña
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            loading="lazy" // No traba la carga inicial
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (

@@ -7,24 +7,26 @@ import SocialSection from "./components/SocialSection";
 import PropertyCard from "./components/PropertyCard";
 import type { Metadata } from "next";
 
-export const revalidate = 0;
+export const revalidate = 60; //OPTIMIZACIÓN: Vercel cacheará la home por 60 segs. Reduce costos y es súper rápido.
 
+// SEO: Optimizamos la meta descripción para Google
 export const metadata: Metadata = {
-  title: "Propiedades en Venta y Alquiler en La Costa",
+  title: "Inmobiliaria Minini | Venta y Alquiler en La Costa",
   description:
-    "Explorá nuestro listado de casas, departamentos, dúplex y lotes en San Bernardo, Mar de Ajó y toda la Costa Atlántica. Filtrá por tipo, operación y ubicación.",
+    "Inmobiliaria Minini: Líderes en venta, alquiler y administración de propiedades en San Bernardo, Mar de Ajó y todo el Partido de la Costa.",
+  keywords: ["Inmobiliaria Minini", "Minini Propiedades", "San Bernardo", "Mar de Ajó", "venta casas la costa", "alquileres la costa", "administracion de consorcios minini"],
   openGraph: {
-    title: "Propiedades en Venta y Alquiler en La Costa | Minini",
+    title: "Inmobiliaria Minini | San Bernardo y Mar de Ajó",
     description:
-      "Casas, departamentos, dúplex y lotes en San Bernardo y Mar de Ajó.",
-    url: "/propiedades",
+      "Encontrá casas, departamentos, dúplex y lotes en el Partido de la Costa con Inmobiliaria Minini.",
+    url: "https://tudominio.com",
   },
 };
 
 export default async function HomePage() {
   const { data } = await supabase
     .from("properties")
-    .select("*")
+    .select("*") 
     .eq("is_featured", true)
     .neq("status", "oculto")
     .order("created_at", { ascending: false })
@@ -42,9 +44,11 @@ export default async function HomePage() {
           <div className="absolute inset-0">
             <Image
               src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
-              alt="Hero"
+              alt="Inmobiliaria Minini - Venta y Alquiler de Propiedades" // 🚀 SEO: Mejor texto alternativo
               fill
-              priority
+              priority // 🚀 CRUCIAL para LCP rápido
+              sizes="100vw" // 🚀 Le dice al navegador que esta imagen ocupa toda la pantalla
+              quality={85} // Balance ideal entre peso y calidad visual
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
@@ -58,7 +62,7 @@ export default async function HomePage() {
               <span className="text-secondary">lo tenemos.</span>
             </h1>
             <p className="text-white/70 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed font-sans">
-              Encontrá tu próxima propiedad con la experiencia y confianza de años en el mercado inmobiliario.
+              Encontrá tu próxima propiedad en La Costa con la experiencia y confianza de la familia Minini.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">
