@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { supabase } from "../../lib/supabase";
 import PropertyDetailClient from "./PropertyDetailClient";
 
+export const revalidate = 120;
+
 export async function generateMetadata(
     { params }: { params: Promise<{ id: string }> }
 ): Promise<Metadata> {

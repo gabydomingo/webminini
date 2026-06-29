@@ -7,7 +7,7 @@ import SocialSection from "./components/SocialSection";
 import PropertyCard from "./components/PropertyCard";
 import type { Metadata } from "next";
 
-export const revalidate = 60; //OPTIMIZACIÓN: Vercel cacheará la home por 60 segs. Reduce costos y es súper rápido.
+export const revalidate = 120;
 
 // SEO: Optimizamos la meta descripción para Google
 export const metadata: Metadata = {
