@@ -147,6 +147,7 @@ export default function SobreNosotros() {
                       src={socio.imagen}
                       alt={`Foto de ${socio.nombre}`}
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   ) : (

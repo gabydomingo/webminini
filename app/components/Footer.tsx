@@ -31,7 +31,7 @@ export default function Footer() {
                                 fill
                                 sizes="288px"
                                 className="object-contain filter brightness-0 invert"
-                                priority
+                                unoptimized
                             />
                         </div>
 
@@ -88,7 +88,7 @@ export default function Footer() {
                             <Link href="/propiedades" className="hover:text-primary transition-colors">Propiedades</Link>
                             <Link href="/sobre-nosotros" className="hover:text-primary transition-colors">Sobre Nosotros</Link>
                             <Link href="/contacto" className="hover:text-primary transition-colors">Contacto</Link>
-                            <Link href="/consorcio" className="hover:text-primary transition-colors">Administración</Link>
+                            <Link href="/administrador" className="hover:text-primary transition-colors">Administración</Link>
                         </nav>
                     </div>
 
@@ -110,6 +110,7 @@ export default function Footer() {
                                     fill
                                     sizes="224px"
                                     className="object-contain"
+                                    unoptimized
                                 />
                             </a>
                             <a
@@ -124,6 +125,7 @@ export default function Footer() {
                                     fill
                                     sizes="224px"
                                     className="object-contain"
+                                    unoptimized
                                 />
                             </a>
                         </div>

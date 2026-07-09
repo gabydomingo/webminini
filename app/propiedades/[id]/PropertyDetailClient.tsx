@@ -136,7 +136,7 @@ export default function PropertyDetailClient({ id }: { id: string }) {
                 {images.length > 0 && mainImage ? (
                     <div className="relative mb-10 h-[50vh] md:h-[60vh] lg:h-[70vh] flex gap-2">
                         <div className="relative flex-[2] md:flex-[3] h-full rounded-2xl overflow-hidden cursor-pointer group bg-input" onClick={() => openLightbox(0)}>
-                            <Image src={mainImage} alt="Foto principal" fill sizes="(max-width: 768px) 100vw, 75vw" className="object-cover transition-transform duration-500 group-hover:scale-105" priority />
+                            <Image src={mainImage} alt="Foto principal" fill sizes="(max-width: 768px) 100vw, 75vw" className="object-cover transition-transform duration-500 group-hover:scale-105" priority unoptimized />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                         </div>
                         {sideImages.length > 0 && (

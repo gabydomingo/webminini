@@ -58,8 +58,8 @@ export default function Header() {
                     fill
                     sizes="(max-width: 768px) 80px, 340px"
                     className="object-contain"
-                    quality={100}
                     priority
+                    unoptimized
                   />
                 )}
               </div>

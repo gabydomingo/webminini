@@ -44,11 +44,11 @@ export default async function HomePage() {
           <div className="absolute inset-0">
             <Image
               src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
-              alt="Inmobiliaria Minini - Venta y Alquiler de Propiedades" // 🚀 SEO: Mejor texto alternativo
+              alt="Inmobiliaria Minini - Venta y Alquiler de Propiedades"
               fill
-              priority // 🚀 CRUCIAL para LCP rápido
-              sizes="100vw" // 🚀 Le dice al navegador que esta imagen ocupa toda la pantalla
-              quality={85} // Balance ideal entre peso y calidad visual
+              priority
+              sizes="100vw"
+              unoptimized
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
