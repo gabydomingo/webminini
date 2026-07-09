@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "backup:db": "node scripts/backup-postgres.mjs",
+    "backup:images": "node scripts/download-images.mjs",
+    "bucket:usage": "node scripts/list-bucket-usage.mjs",
+    "bucket:clean": "node scripts/clean-orphans.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.1",

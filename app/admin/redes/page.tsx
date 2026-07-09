@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 
 // ─── Tipo para cada video en la lista ───
+// "mp4" solo puede existir en videos cargados antes (legacy); ya no se pueden crear nuevos.
 type VideoItem = {
     id: string;
     type: 'tiktok' | 'mp4';
     url: string;
-    file?: File; // Solo existirá si es un archivo MP4 recién seleccionado
 }
 
 export default function RedesYVideos() {
@@ -20,9 +20,9 @@ export default function RedesYVideos() {
     const [videos, setVideos] = useState<VideoItem[]>([])
 
     // ─── Estados para agregar un NUEVO video ───
-    const [newType, setNewType] = useState<'tiktok' | 'mp4'>('tiktok')
+    // NOTA: Solo se permiten links de TikTok. Subir MP4 directo infla el Storage de Supabase
+    // (cada video pesa varios MB y el plan Free tiene solo 1GB de storage total).
     const [newUrl, setNewUrl] = useState('')
-    const [newFile, setNewFile] = useState<File | null>(null)
 
     // Cargar la configuración actual al abrir la página
     useEffect(() => {
@@ -54,29 +54,18 @@ export default function RedesYVideos() {
         fetchSettings()
     }, [])
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setNewFile(e.target.files[0])
-        }
-    }
-
     // Agregar video a la cola visual (todavía no se guarda en la BD)
     const handleAddToList = () => {
-        if (newType === 'tiktok' && !newUrl.trim()) return alert('Por favor, pegá un link de TikTok.')
-        if (newType === 'mp4' && !newFile) return alert('Por favor, seleccioná un archivo de video.')
+        if (!newUrl.trim()) return alert('Por favor, pegá un link de TikTok.')
 
         const newItem: VideoItem = {
             id: Math.random().toString(36).substring(7),
-            type: newType,
-            url: newType === 'tiktok' ? newUrl.trim() : URL.createObjectURL(newFile!),
-            file: newType === 'mp4' ? newFile! : undefined
+            type: 'tiktok',
+            url: newUrl.trim()
         }
 
         setVideos(prev => [...prev, newItem])
-
-        // Limpiamos los inputs
         setNewUrl('')
-        setNewFile(null)
     }
 
     const handleRemoveFromList = (idToRemove: string) => {
@@ -92,25 +81,7 @@ export default function RedesYVideos() {
         setSuccessMsg('')
 
         try {
-            const finalFeedToSave = []
-
-            for (const item of videos) {
-                // Si es un archivo nuevo que subió el usuario, lo mandamos al Storage primero
-                if (item.file) {
-                    const fileExt = item.file.name.split('.').pop()
-                    const fileName = `home-feed-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-
-                    const { error: uploadError } = await supabase.storage.from('propiedades').upload(fileName, item.file)
-                    if (uploadError) throw uploadError
-
-                    const { data: { publicUrl } } = supabase.storage.from('propiedades').getPublicUrl(fileName)
-
-                    finalFeedToSave.push({ type: 'mp4', url: publicUrl })
-                } else {
-                    // Si ya era un link de TikTok o un MP4 que ya estaba en la base, lo guardamos tal cual
-                    finalFeedToSave.push({ type: item.type, url: item.url })
-                }
-            }
+            const finalFeedToSave = videos.map(item => ({ type: item.type, url: item.url }))
 
             // Guardamos el array completo como JSON (texto) en la base de datos
             const { error: dbError } = await supabase
@@ -151,30 +122,16 @@ export default function RedesYVideos() {
                         Agregar Video a la Lista
                     </div>
                     <div className="p-6 space-y-6">
-                        <div className="flex gap-4">
-                            <label className={`flex-1 border-2 rounded-lg p-3 cursor-pointer transition flex items-center gap-2 ${newType === 'tiktok' ? 'border-[#8B1A1A] bg-primary/10 text-foreground' : 'border-border-input hover:bg-input text-foreground/80'}`}>
-                                <input type="radio" checked={newType === 'tiktok'} onChange={() => setNewType('tiktok')} className="w-4 h-4 text-[#8B1A1A] accent-[#8B1A1A]" />
-                                <span className="font-semibold text-sm">Link TikTok</span>
-                            </label>
-                            <label className={`flex-1 border-2 rounded-lg p-3 cursor-pointer transition flex items-center gap-2 ${newType === 'mp4' ? 'border-[#8B1A1A] bg-primary/10 text-foreground' : 'border-border-input hover:bg-input text-foreground/80'}`}>
-                                <input type="radio" checked={newType === 'mp4'} onChange={() => setNewType('mp4')} className="w-4 h-4 text-[#8B1A1A] accent-[#8B1A1A]" />
-                                <span className="font-semibold text-sm">Archivo MP4</span>
-                            </label>
-                        </div>
+                        <p className="text-xs text-foreground/50 bg-input/60 border border-border-card rounded-lg p-3">
+                            Solo se admiten links de TikTok. Subir videos MP4 directo consume el storage limitado de Supabase.
+                        </p>
 
                         <div>
-                            {newType === 'tiktok' ? (
-                                <input
-                                    type="url" value={newUrl} onChange={(e) => setNewUrl(e.target.value)}
-                                    placeholder="Ej: https://www.tiktok.com/@user/video/123"
-                                    className="w-full p-2.5 bg-input border border-border-input text-foreground rounded-lg focus:outline-none focus:border-[#8B1A1A] text-sm transition-colors"
-                                />
-                            ) : (
-                                <input
-                                    type="file" accept="video/mp4,video/webm" onChange={handleFileChange}
-                                    className="w-full p-2 bg-input border border-border-input text-foreground rounded-lg text-sm transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
-                                />
-                            )}
+                            <input
+                                type="url" value={newUrl} onChange={(e) => setNewUrl(e.target.value)}
+                                placeholder="Ej: https://www.tiktok.com/@user/video/123"
+                                className="w-full p-2.5 bg-input border border-border-input text-foreground rounded-lg focus:outline-none focus:border-[#8B1A1A] text-sm transition-colors"
+                            />
                         </div>
 
                         <button
@@ -207,7 +164,7 @@ export default function RedesYVideos() {
                                                 {vid.type}
                                             </span>
                                             <span className="text-xs text-foreground/80 truncate max-w-[200px]" title={vid.url}>
-                                                {vid.file ? vid.file.name : vid.url}
+                                                {vid.url}
                                             </span>
                                         </div>
                                         <button
@@ -227,7 +184,7 @@ export default function RedesYVideos() {
                             type="submit" disabled={loading || videos.length === 0}
                             className="w-full py-3 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold rounded-lg shadow-md transition disabled:opacity-50 text-sm tracking-wide uppercase flex items-center justify-center gap-2"
                         >
-                            {loading ? 'Subiendo archivos y guardando...' : 'Guardar y Publicar en la Web'}
+                            {loading ? 'Guardando...' : 'Guardar y Publicar en la Web'}
                         </button>
                     </div>
                 </form>

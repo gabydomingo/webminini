@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '../../../../lib/supabase'
+import { compressImage } from '../../../../lib/imageCompress'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
@@ -98,10 +99,11 @@ export default function EditarPropiedad() {
         }
     }
 
-    const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleNewImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const filesArray = Array.from(e.target.files)
-            const newImgs = filesArray.map((file, i) => ({
+            const compressed = await Promise.all(filesArray.map(file => compressImage(file)))
+            const newImgs = compressed.map((file, i) => ({
                 id: `new-${Date.now()}-${i}`,
                 isExisting: false,
                 url: URL.createObjectURL(file),
