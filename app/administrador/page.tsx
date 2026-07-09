@@ -3,6 +3,7 @@
 import Header from "../components/Header";
 import Link from "next/link";
 import Image from "next/image";
+import Footer from "../components/Footer";
 
 // ─── LISTA DE EDIFICIOS ──────────────────────────────────────────────────────
 const EDIFICIOS = [
@@ -192,6 +193,7 @@ export default function AdministracionPage() {
                 </section>
 
             </main>
+            {/* <Footer /> */}
         </div>
     );
 }
