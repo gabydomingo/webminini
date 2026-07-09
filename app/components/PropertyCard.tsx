@@ -44,11 +44,11 @@ export default function PropertyCard({ property }: { property: Property }) {
                     {img ? (
                         <Image
                             src={img}
-                            alt={seoAltText} // Mejor para SEO que solo el título
+                            alt={seoAltText}
                             fill
-                            // 🚀 Le ahorra recursos a Vercel sirviendo la imagen pequeña
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            loading="lazy" // No traba la carga inicial
+                            loading="lazy"
+                            unoptimized
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (

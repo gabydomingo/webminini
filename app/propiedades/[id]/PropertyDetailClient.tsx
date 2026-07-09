@@ -29,13 +29,13 @@ function MiniPropertyCard({ property }: { property: Property }) {
             <div className="bg-card rounded-xl overflow-hidden shadow-sm border border-border-card hover:shadow-md transition-all">
                 <div className="relative h-40 overflow-hidden bg-input">
                     {img && (
-                        <Image 
-                            src={img} 
-                            alt={property.title} 
-                            fill 
-                            // 👇 OPTIMIZACIÓN: Como es una tarjeta chica, bajamos la resolución de carga
+                        <Image
+                            src={img}
+                            alt={property.title}
+                            fill
                             sizes="(max-width: 768px) 100vw, 300px"
-                            className="object-cover group-hover:scale-105 transition-transform" 
+                            unoptimized
+                            className="object-cover group-hover:scale-105 transition-transform"
                         />
                     )}
                     <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded font-sans">
@@ -147,7 +147,7 @@ export default function PropertyDetailClient({ id }: { id: string }) {
                                     {sideImages.map((img, idx) => (
                                         <div key={idx} className="relative w-full h-[50%] shrink-0 snap-center rounded-2xl overflow-hidden cursor-pointer group bg-input" onClick={() => openLightbox(idx + 1)}>
                                             {/* 👇 OPTIMIZACIÓN: Las fotos de la barra lateral son chicas y lazy */}
-                                            <Image src={img} alt={`Foto ${idx + 2}`} fill sizes="(max-width: 768px) 0vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                                            <Image src={img} alt={`Foto ${idx + 2}`} fill sizes="(max-width: 768px) 0vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" unoptimized />
                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                                         </div>
                                     ))}
@@ -182,7 +182,7 @@ export default function PropertyDetailClient({ id }: { id: string }) {
                     <aside className="w-full lg:w-[380px] shrink-0 relative font-sans">
                         <div className="bg-card rounded-2xl shadow-xl border border-border-card overflow-hidden sticky top-28 z-10">
                             <div className="bg-input border-b border-border-card p-6 flex items-center gap-4">
-                                <div className="relative w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 border border-gray-200 shadow-sm flex items-center justify-center"><Image src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/2.png" alt="Logo Inmobiliaria Minini" fill className="object-cover" /></div>
+                                <div className="relative w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 border border-gray-200 shadow-sm flex items-center justify-center"><Image src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/2.png" alt="Logo Inmobiliaria Minini" fill className="object-cover" unoptimized /></div>
                                 <div><p className="text-xs text-foreground/50 uppercase tracking-widest font-bold mb-1">Contactar con</p><h4 className="font-bold text-foreground text-lg leading-tight">Asesor de ventas de Minini Propiedades</h4></div>
                             </div>
                             <div className="p-6">
@@ -219,7 +219,7 @@ export default function PropertyDetailClient({ id }: { id: string }) {
                     <div className="absolute top-6 left-6 text-white font-medium tracking-widest text-sm z-[110] bg-black/50 px-3 py-1 rounded-full font-sans">{currentImageIndex + 1} / {images.length}</div>
                     <button className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[110] p-4 bg-black/20 hover:bg-black/50 rounded-full transition-colors" onClick={prevImage}><svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg></button>
                     <div className="relative w-full h-full max-w-[90vw] max-h-[85vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                        {images[currentImageIndex] && <Image src={images[currentImageIndex]} alt={`Foto ${currentImageIndex + 1}`} fill className="object-contain" sizes="100vw" priority />}
+                        {images[currentImageIndex] && <Image src={images[currentImageIndex]} alt={`Foto ${currentImageIndex + 1}`} fill className="object-contain" sizes="100vw" unoptimized />}
                     </div>
                     <button className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-[110] p-4 bg-black/20 hover:bg-black/50 rounded-full transition-colors" onClick={nextImage}><svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg></button>
                 </div>
