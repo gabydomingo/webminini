@@ -4,6 +4,7 @@ import "./globals.css";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import { ThemeProvider } from "./components/ThemeProvider";
 import WhatsAppFloating from "./components/WhatsAppFloating";
+import BannerMantenimiento from "./components/BannerMantenimiento";
 import Footer from "./components/Footer";
 
 const aleo = localFont({
@@ -48,7 +49,7 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
     "name": "Minini Propiedades y Administración de Consorcios",
-    "image": "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/2.png", // Logo
+    "image": "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/2.png", // Logo
     "@id": "https://tudominio.com", // ⚠️ CAMBIAR POR DOMINIO FINAL
     "url": "https://tudominio.com", // ⚠️ CAMBIAR POR DOMINIO FINAL
     "telephone": "+5492257307064",
@@ -94,6 +95,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground transition-colors duration-300">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <BannerMantenimiento />
           <AnalyticsTracker />
           {children}
           <WhatsAppFloating />

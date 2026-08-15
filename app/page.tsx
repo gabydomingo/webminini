@@ -43,7 +43,7 @@ export default async function HomePage() {
         <section className="relative min-h-[88vh] flex flex-col">
           <div className="absolute inset-0">
             <Image
-              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
+              src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
               alt="Inmobiliaria Minini - Venta y Alquiler de Propiedades"
               fill
               priority

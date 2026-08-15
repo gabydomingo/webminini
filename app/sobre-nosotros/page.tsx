@@ -15,7 +15,7 @@ const socios = [
     rol: " Martillero, Corredor Público y administrador de consorcios",
     descripcion:
       "Fundador de Minini Administración de Propiedades e Inmobiliaria. Con más de 25 años de trayectoria, Román construyó desde cero una marca basada en la confianza, la seriedad y el trato cercano. Su experiencia en el mercado inmobiliario y en la administración de consorcios es el pilar sobre el que hoy se desarrolla todo el equipo de trabajo.",
-    imagen: "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/romanminini.jpeg",
+    imagen: "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/romanminini.jpeg",
   },
   {
     nombre: "Juan Minini",
@@ -29,7 +29,7 @@ const socios = [
     rol: "Ventas Inmobiliarias",
     descripcion:
       "Amigo y socio de la familia Minini desde hace 4 años, Franco es la cara dinámica e innovadora del sector de ventas. Próximo a obtener su matrícula de Martillero y Corredor Público, combina la energía y el enfoque moderno de la nueva generación con la solidez y los valores que aprendió junto a Román. En ventas, es quien convierte oportunidades en resultados.",
-    imagen: "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/fanco.jpg",
+    imagen: "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/fanco.jpg",
   },
 ];
 

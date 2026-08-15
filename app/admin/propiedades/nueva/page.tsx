@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
-import { compressImage } from '../../../lib/imageCompress'
+import { comprimirImagen, formatearPeso, type ImagenComprimida } from '../../../lib/imageCompress'
+import { subirComprimida } from '../../../lib/storage'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
@@ -11,7 +12,7 @@ const MapPicker = dynamic(() => import('../../../components/MapPicker'), { ssr: 
 
 type ImageItem = {
     id: string;
-    file: File;
+    comp: ImagenComprimida;
     preview: string;
 }
 
@@ -32,6 +33,8 @@ export default function NuevaPropiedad() {
 
     const [images, setImages] = useState<ImageItem[]>([])
     const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+    const [procesando, setProcesando] = useState(false)
+    const [progreso, setProgreso] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchLists = async () => {
@@ -70,16 +73,34 @@ export default function NuevaPropiedad() {
     }
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const filesArray = Array.from(e.target.files)
-            const compressed = await Promise.all(filesArray.map(file => compressImage(file)))
-            const newImgs = compressed.map(file => ({
-                id: Math.random().toString(36).substring(7),
-                file,
-                preview: URL.createObjectURL(file)
-            }))
-            setImages(prev => [...prev, ...newImgs])
+        if (!e.target.files?.length) return
+
+        const archivos = Array.from(e.target.files)
+        e.target.value = ''   // permite volver a elegir el mismo archivo
+        setProcesando(true)
+        setError(null)
+
+        const nuevas: ImageItem[] = []
+        const fallidas: string[] = []
+
+        for (let i = 0; i < archivos.length; i++) {
+            setProgreso(`Optimizando ${i + 1} de ${archivos.length}...`)
+            try {
+                const comp = await comprimirImagen(archivos[i])
+                nuevas.push({
+                    id: Math.random().toString(36).substring(7),
+                    comp,
+                    preview: URL.createObjectURL(comp.full),
+                })
+            } catch (err: any) {
+                fallidas.push(err?.message || archivos[i].name)
+            }
         }
+
+        setImages(prev => [...prev, ...nuevas])
+        setProcesando(false)
+        setProgreso(null)
+        if (fallidas.length) setError(fallidas.join(' · '))
     }
 
     const removeImage = (idToRemove: string) => {
@@ -104,14 +125,12 @@ export default function NuevaPropiedad() {
 
         try {
             const imageUrls: string[] = []
-            for (const img of images) {
-                const fileExt = img.file.name.split('.').pop()
-                const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
-                const { error: uploadError } = await supabase.storage.from('propiedades').upload(fileName, img.file)
-                if (uploadError) throw uploadError
-                const { data: { publicUrl } } = supabase.storage.from('propiedades').getPublicUrl(fileName)
-                imageUrls.push(publicUrl)
+            for (let i = 0; i < images.length; i++) {
+                setProgreso(`Subiendo foto ${i + 1} de ${images.length}...`)
+                const { url } = await subirComprimida(images[i].comp)
+                imageUrls.push(url)
             }
+            setProgreso('Guardando la propiedad...')
 
             const featuresArray = formData.features.split(',').map(f => f.trim()).filter(f => f !== '')
 
@@ -142,6 +161,7 @@ export default function NuevaPropiedad() {
             setError(err.message || 'Hubo un error al guardar la propiedad.')
         } finally {
             setLoading(false)
+            setProgreso(null)
         }
     }
 
@@ -218,8 +238,28 @@ export default function NuevaPropiedad() {
                             </div>
                             <p className="text-xs text-foreground/40">Podés arrastrar para reordenar. La primera foto será la Portada.</p>
                         </div>
-                        <input type="file" multiple accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                        <input type="file" multiple accept="image/*" onChange={handleImageChange} disabled={procesando || loading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait" />
                     </div>
+
+                    {(procesando || progreso) && (
+                        <div className="mt-4 flex items-center gap-3 text-sm text-foreground/70 bg-input/50 rounded-lg px-4 py-3">
+                            <span className="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            {progreso || 'Optimizando fotos...'}
+                        </div>
+                    )}
+
+                    {images.length > 0 && !procesando && (() => {
+                        const antes = images.reduce((a, i) => a + i.comp.bytesOriginales, 0)
+                        const despues = images.reduce((a, i) => a + i.comp.full.size + i.comp.thumb.size, 0)
+                        const ahorro = antes > 0 ? Math.round((1 - despues / antes) * 100) : 0
+                        return (
+                            <p className="mt-4 text-xs text-foreground/50">
+                                {images.length} foto{images.length === 1 ? '' : 's'} ·{' '}
+                                {formatearPeso(antes)} → <strong className="text-primary">{formatearPeso(despues)}</strong>
+                                {ahorro > 0 && ` (${ahorro}% menos)`}
+                            </p>
+                        )
+                    })()}
 
                     {images.length > 0 && (
                         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -251,8 +291,8 @@ export default function NuevaPropiedad() {
 
                 <div className="p-8 bg-card border-t border-border-card flex justify-end gap-4">
                     <Link href="/admin/propiedades" className="px-6 py-3 text-foreground bg-input border border-border-input hover:bg-border-card font-semibold rounded-lg transition shadow-sm">Cancelar</Link>
-                    <button type="submit" disabled={loading} className="px-8 py-3 bg-primary hover:bg-primary-hover text-white font-bold tracking-wide rounded-lg transition shadow-md disabled:opacity-50 flex items-center gap-2">
-                        {loading ? 'Subiendo...' : 'Guardar y Publicar'}
+                    <button type="submit" disabled={loading || procesando} className="px-8 py-3 bg-primary hover:bg-primary-hover text-white font-bold tracking-wide rounded-lg transition shadow-md disabled:opacity-50 flex items-center gap-2">
+                        {loading ? (progreso || 'Subiendo...') : 'Guardar y Publicar'}
                     </button>
                 </div>
             </form>

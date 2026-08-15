@@ -182,7 +182,7 @@ export default function PropertyDetailClient({ id }: { id: string }) {
                     <aside className="w-full lg:w-[380px] shrink-0 relative font-sans">
                         <div className="bg-card rounded-2xl shadow-xl border border-border-card overflow-hidden sticky top-28 z-10">
                             <div className="bg-input border-b border-border-card p-6 flex items-center gap-4">
-                                <div className="relative w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 border border-gray-200 shadow-sm flex items-center justify-center"><Image src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/2.png" alt="Logo Inmobiliaria Minini" fill className="object-cover" unoptimized /></div>
+                                <div className="relative w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 border border-gray-200 shadow-sm flex items-center justify-center"><Image src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/2.png" alt="Logo Inmobiliaria Minini" fill className="object-cover" unoptimized /></div>
                                 <div><p className="text-xs text-foreground/50 uppercase tracking-widest font-bold mb-1">Contactar con</p><h4 className="font-bold text-foreground text-lg leading-tight">Asesor de ventas de Minini Propiedades</h4></div>
                             </div>
                             <div className="p-6">

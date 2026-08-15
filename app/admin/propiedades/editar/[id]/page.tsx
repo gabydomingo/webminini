@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '../../../../lib/supabase'
-import { compressImage } from '../../../../lib/imageCompress'
+import { comprimirImagen, type ImagenComprimida } from '../../../../lib/imageCompress'
+import { subirComprimida } from '../../../../lib/storage'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
@@ -13,7 +14,8 @@ type GalleryItem = {
     id: string;
     isExisting: boolean;
     url: string;
-    file?: File;
+    /** Solo en las fotos nuevas: la versión ya comprimida lista para subir. */
+    comp?: ImagenComprimida;
 }
 
 export default function EditarPropiedad() {
@@ -37,6 +39,8 @@ export default function EditarPropiedad() {
 
     const [gallery, setGallery] = useState<GalleryItem[]>([])
     const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+    const [procesando, setProcesando] = useState(false)
+    const [progreso, setProgreso] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -100,17 +104,35 @@ export default function EditarPropiedad() {
     }
 
     const handleNewImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const filesArray = Array.from(e.target.files)
-            const compressed = await Promise.all(filesArray.map(file => compressImage(file)))
-            const newImgs = compressed.map((file, i) => ({
-                id: `new-${Date.now()}-${i}`,
-                isExisting: false,
-                url: URL.createObjectURL(file),
-                file: file
-            }))
-            setGallery(prev => [...prev, ...newImgs])
+        if (!e.target.files?.length) return
+
+        const archivos = Array.from(e.target.files)
+        e.target.value = ''
+        setProcesando(true)
+        setError(null)
+
+        const nuevas: GalleryItem[] = []
+        const fallidas: string[] = []
+
+        for (let i = 0; i < archivos.length; i++) {
+            setProgreso(`Optimizando ${i + 1} de ${archivos.length}...`)
+            try {
+                const comp: ImagenComprimida = await comprimirImagen(archivos[i])
+                nuevas.push({
+                    id: `new-${Date.now()}-${i}`,
+                    isExisting: false,
+                    url: URL.createObjectURL(comp.full),
+                    comp,
+                })
+            } catch (err: any) {
+                fallidas.push(err?.message || archivos[i].name)
+            }
         }
+
+        setGallery(prev => [...prev, ...nuevas])
+        setProcesando(false)
+        setProgreso(null)
+        if (fallidas.length) setError(fallidas.join(' · '))
     }
 
     const removeGalleryImage = (idToRemove: string) => {
@@ -139,13 +161,10 @@ export default function EditarPropiedad() {
             for (const item of gallery) {
                 if (item.isExisting) {
                     finalUrls.push(item.url)
-                } else if (item.file) {
-                    const fileExt = item.file.name.split('.').pop()
-                    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
-                    const { error: uploadError } = await supabase.storage.from('propiedades').upload(fileName, item.file)
-                    if (uploadError) throw uploadError
-                    const { data: { publicUrl } } = supabase.storage.from('propiedades').getPublicUrl(fileName)
-                    finalUrls.push(publicUrl)
+                } else if (item.comp) {
+                    setProgreso('Subiendo fotos nuevas...')
+                    const { url } = await subirComprimida(item.comp)
+                    finalUrls.push(url)
                 }
             }
 
@@ -179,6 +198,7 @@ export default function EditarPropiedad() {
             setError(err.message || 'Hubo un error al actualizar la propiedad.')
         } finally {
             setLoading(false)
+            setProgreso(null)
         }
     }
 
@@ -254,8 +274,16 @@ export default function EditarPropiedad() {
                             </div>
                             <p className="text-xs text-foreground/40">Mantené presionado y arrastrá para cambiar el orden.</p>
                         </div>
-                        <input type="file" multiple accept="image/*" onChange={handleNewImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                        <input type="file" multiple accept="image/*" onChange={handleNewImageChange} disabled={procesando || loading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait" />
                     </div>
+
+                    {(procesando || progreso) && (
+                        <div className="mt-4 flex items-center gap-3 text-sm text-foreground/70 bg-input/50 rounded-lg px-4 py-3">
+                            <span className="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            {progreso || 'Optimizando fotos...'}
+                        </div>
+                    )}
+
 
                     {gallery.length > 0 && (
                         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">

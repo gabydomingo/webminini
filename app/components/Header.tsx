@@ -33,8 +33,8 @@ export default function Header() {
   }, []);
 
   // URLs Limpias y Públicas
-  const logoClaro = "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/logo-letra-negra.png";
-  const logoOscuro = "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/1.png";
+  const logoClaro = "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/logo-letra-negra.png";
+  const logoOscuro = "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/1.png";
 
   return (
     <>

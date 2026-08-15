@@ -74,3 +74,29 @@ h5,
 h6 {
   font-family: var(--font-serif);
 }
+/* ─────────────────────────────────────────────────────────────
+   CARTEL DE MANTENIMIENTO
+   Lo enciende app/components/BannerMantenimiento.tsx agregando la
+   clase `con-banner-mantenimiento` al <html>. Como el header del
+   sitio es `fixed top-0`, acá lo bajamos justo lo que mide el
+   cartel (h-11 en celular, h-10 en escritorio) y corremos el
+   contenido para que nada quede tapado.
+   Si el cartel está apagado, estas reglas no aplican a nada.
+   ───────────────────────────────────────────────────────────── */
+.con-banner-mantenimiento body {
+  padding-top: 2.75rem; /* h-11 */
+}
+
+.con-banner-mantenimiento header {
+  top: 2.75rem;
+}
+
+@media (min-width: 768px) {
+  .con-banner-mantenimiento body {
+    padding-top: 2.5rem; /* md:h-10 */
+  }
+
+  .con-banner-mantenimiento header {
+    top: 2.5rem;
+  }
+}

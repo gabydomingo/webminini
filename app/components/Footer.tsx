@@ -26,7 +26,7 @@ export default function Footer() {
                     <div className="flex flex-col items-center space-y-8">
                         <div className="relative w-72 h-24">
                             <Image
-                                src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/Copia%20de%201col%20neg%20compacto.png"
+                                src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/Copia%20de%201col%20neg%20compacto.png"
                                 alt="Minini Propiedades"
                                 fill
                                 sizes="288px"
@@ -64,14 +64,14 @@ export default function Footer() {
                                     Tomo III - Folio 359 | Mat. N° 1057
                                 </a>
                                 <br />
-                                <a href="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/screencapture-dppj-ui-mjus-gba-gob-ar-dppj-cn-ui-p-adm-consorcios-2026-05-13-20_29_58.png" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                <a href="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/screencapture-dppj-ui-mjus-gba-gob-ar-dppj-cn-ui-p-adm-consorcios-2026-05-13-20_29_58.png" target="_blank" rel="noopener noreferrer" className="hover:underline">
                                     Matricula de administrador N° 9 | Legajo  6/273928
                                 </a>
                             </div>
                             <div>
                                 <p className="font-bold text-white text-sm mb-1 font-serif">Juan Minini</p>
                                 <p>Martillero y Corredor Público</p>
-                                <a href="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/screencapture-dppj-ui-mjus-gba-gob-ar-dppj-cn-ui-p-adm-consorcios-2026-05-13-20_42_28.png" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                <a href="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/screencapture-dppj-ui-mjus-gba-gob-ar-dppj-cn-ui-p-adm-consorcios-2026-05-13-20_42_28.png" target="_blank" rel="noopener noreferrer" className="hover:underline">
                                     Matricula de administrador N° 20 | Legajo  4/274245
                                 </a>
                             </div>
@@ -105,7 +105,7 @@ export default function Footer() {
                                 className="relative w-56 h-20 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
                             >
                                 <Image
-                                    src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/logo-blanco-colegio3-min.png"
+                                    src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/logo-blanco-colegio3-min.png"
                                     alt="Colegio de Martilleros"
                                     fill
                                     sizes="224px"
@@ -120,7 +120,7 @@ export default function Footer() {
                                 className="relative w-56 h-20 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
                             >
                                 <Image
-                                    src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/Logo-Camara-con-sigla_BLANCO3.png"
+                                    src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/Logo-Camara-con-sigla_BLANCO3.png"
                                     alt="Cámara de Administradores"
                                     fill
                                     sizes="224px"
