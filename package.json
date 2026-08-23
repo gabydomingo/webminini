@@ -7,15 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "estado": "node scripts/estado.mjs",
     "auditar:claves": "node scripts/auditar-claves.mjs",
-    "rescate:test": "node scripts/00-test-storage.mjs",
-    "rescate:imagenes": "node scripts/01-rescate-imagenes.mjs",
-    "rescate:logos": "node scripts/rescate-fotospagina.mjs",
+    "subir:logos": "node scripts/07-subir-logos.mjs",
+    "optimizar:hero": "node scripts/08-optimizar-hero.mjs",
     "fotos:comprimir": "node scripts/02-comprimir.mjs",
     "fotos:subir-r2": "node scripts/03-subir-r2.mjs",
     "fotos:urls": "node scripts/04-actualizar-urls.mjs",
+    "rescate:logos": "node scripts/rescate-fotospagina.mjs",
     "backup:db": "node scripts/backup-postgres.mjs",
-    "backup:images": "node scripts/download-images.mjs",
     "bucket:usage": "node scripts/list-bucket-usage.mjs",
     "bucket:clean": "node scripts/clean-orphans.mjs"
   },
@@ -27,7 +27,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-leaflet": "^5.0.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1110.0",

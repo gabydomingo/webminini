@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Property } from "../types";
+import FotoPropiedad from "./FotoPropiedad";
 
 // ─── Helpers locales ──────────────────────────────────────────────────────────
 function formatPrice(price: number | null, currency: string) {
@@ -42,13 +42,10 @@ export default function PropertyCard({ property }: { property: Property }) {
 
                 <div className="relative h-52 overflow-hidden shrink-0 bg-input">
                     {img ? (
-                        <Image
+                        <FotoPropiedad
                             src={img}
                             alt={seoAltText}
-                            fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            loading="lazy"
-                            unoptimized
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (

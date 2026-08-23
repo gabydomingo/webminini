@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { urlMiniatura } from "../../lib/imagenes";
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import Header from "../../components/Header";
@@ -146,8 +147,11 @@ export default function PropertyDetailClient({ id }: { id: string }) {
                                     <style dangerouslySetInnerHTML={{ __html: `.hide-scroll::-webkit-scrollbar { display: none; }` }} />
                                     {sideImages.map((img, idx) => (
                                         <div key={idx} className="relative w-full h-[50%] shrink-0 snap-center rounded-2xl overflow-hidden cursor-pointer group bg-input" onClick={() => openLightbox(idx + 1)}>
-                                            {/* 👇 OPTIMIZACIÓN: Las fotos de la barra lateral son chicas y lazy */}
-                                            <Image src={img} alt={`Foto ${idx + 2}`} fill sizes="(max-width: 768px) 0vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" unoptimized />
+                                            {/* 👇 La barra lateral se dibuja a ~25vw, así que pide la MINIATURA
+                                                 (~25 KB) en vez de la grande (~150 KB). En una propiedad de
+                                                 25 fotos eso es bajar ~600 KB en vez de ~3.7 MB.
+                                                 El lightbox y la foto principal sí usan la grande. */}
+                                            <Image src={urlMiniatura(img)} alt={`Foto ${idx + 2}`} fill sizes="(max-width: 768px) 0vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" unoptimized />
                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
                                         </div>
                                     ))}

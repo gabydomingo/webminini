@@ -16,28 +16,17 @@
 import { supabase } from "./supabase";
 import { comprimirImagen, type ImagenComprimida } from "./imageCompress";
 
+// La lógica de nombres vive en imagenes.ts, que no tiene dependencias, para
+// que el listado pueda usarla sin arrastrar el cliente de Supabase.
+// Se reexporta acá para no romper los imports que ya existían.
+export { urlMiniatura, urlGrande } from "./imagenes";
+
 const BUCKET = "propiedades";
 
 /** Nombre único y corto, sin acentos ni espacios que rompan la URL. */
 function nombreUnico(extension: string): string {
     const azar = Math.random().toString(36).substring(2, 10);
     return `${azar}-${Date.now()}.${extension}`;
-}
-
-/**
- * Dada la URL de la imagen grande, devuelve la de su miniatura.
- * Si no encuentra el patrón esperado, devuelve la original: peor es no
- * mostrar nada.
- */
-export function urlMiniatura(urlGrande: string): string {
-    if (!urlGrande) return urlGrande;
-    const marca = `/${BUCKET}/`;
-    const i = urlGrande.lastIndexOf(marca);
-    if (i === -1) return urlGrande;
-    const cabeza = urlGrande.slice(0, i + marca.length);
-    const cola = urlGrande.slice(i + marca.length);
-    if (cola.startsWith("thumb/")) return urlGrande;
-    return `${cabeza}thumb/${cola}`;
 }
 
 export type ResultadoSubida = {
