@@ -1,6 +1,29 @@
 import Link from "next/link";
-import { Property } from "../types";
 import FotoPropiedad from "./FotoPropiedad";
+
+/**
+ * La tarjeta usa estas 12 columnas y ninguna más.
+ *
+ * Está tipada así a propósito: el listado y la portada consultan solo lo
+ * que se muestra, sin `description` ni el array completo de fotos. Si
+ * pidiera la `Property` entera, TypeScript obligaría a traer campos que
+ * no se usan y que pesan cientos de kilobytes.
+ */
+export type PropiedadTarjeta = {
+    id: string;
+    title: string;
+    price: number | null;
+    currency: string;
+    operation_type: string;
+    property_type: string;
+    localidad: string | null;
+    location: string | null;
+    // En la base son `integer DEFAULT 0`, nunca vienen en null.
+    bedrooms: number;
+    bathrooms: number;
+    environments: number;
+    images: string[] | null;
+};
 
 // ─── Helpers locales ──────────────────────────────────────────────────────────
 function formatPrice(price: number | null, currency: string) {
@@ -29,7 +52,7 @@ function deduplicateLocation(location: string | null): string {
     return unique.join(', ');
 }
 
-export default function PropertyCard({ property }: { property: Property }) {
+export default function PropertyCard({ property }: { property: PropiedadTarjeta }) {
     const imgArray = Array.isArray(property.images) ? property.images : [];
     const img = imgArray.length > 0 ? imgArray[0] : null;
 

@@ -24,7 +24,16 @@ export default async function PropiedadesPage() {
         supabase.from("form_options").select("*"),
     ]);
 
-    const properties = propData || [];
+    // Las tarjetas del listado solo muestran la PRIMERA foto, pero la
+    // consulta traía el array entero: 284 KB de URLs que viajaban a cada
+    // visitante para no usarse. Recortarlo baja el peso de la página de
+    // ~477 KB a ~200 KB sin perder nada.
+    // `description` sí se conserva: el buscador la usa para encontrar
+    // cosas como "gas natural" o "cochera".
+    const properties = (propData || []).map((p) => ({
+        ...p,
+        images: Array.isArray(p.images) && p.images.length ? [p.images[0]] : [],
+    }));
 
     const options: Record<string, string[]> = {};
     if (optionsData) {

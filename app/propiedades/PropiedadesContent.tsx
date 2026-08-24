@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { useUrlSincronizada } from "../lib/useUrlSincronizada";
 import PropertyCard from "../components/PropertyCard";
 import { Property } from "../types";
 
@@ -121,11 +122,37 @@ export default function PropiedadesContent({
         searchParams.get("propiedad") || ""
     );
     const [loc, setLoc] = useState(searchParams.get("localidad") || "");
-    const [ambientesSelected, setAmbientesSelected] = useState<string[]>([]);
-    const [minPrice, setMinPrice] = useState("");
-    const [maxPrice, setMaxPrice] = useState("");
-    const [sortOrder, setSortOrder] = useState("recent");
-    const [currentPage, setCurrentPage] = useState(1);
+
+    // Estos cinco antes no se leían de la URL, así que al volver con el
+    // botón "atrás" se perdían aunque el resto se conservara.
+    const [ambientesSelected, setAmbientesSelected] = useState<string[]>(
+        searchParams.get("ambientes")?.split(",").filter(Boolean) || []
+    );
+    const [minPrice, setMinPrice] = useState(searchParams.get("min") || "");
+    const [maxPrice, setMaxPrice] = useState(searchParams.get("max") || "");
+    const [sortOrder, setSortOrder] = useState(searchParams.get("orden") || "recent");
+    const [currentPage, setCurrentPage] = useState(
+        Math.max(1, Number(searchParams.get("pagina")) || 1)
+    );
+
+    // Espejo del estado en la barra de direcciones. Es lo que hace que
+    // "atrás" devuelva los filtros y la página donde estaba, y de paso
+    // permite compartir una búsqueda por link o por WhatsApp.
+    const queryUrl = useMemo(() => {
+        const q = new URLSearchParams();
+        if (searchQuery) q.set("q", searchQuery);
+        if (opType) q.set("operacion", opType);
+        if (propType) q.set("propiedad", propType);
+        if (loc) q.set("localidad", loc);
+        if (ambientesSelected.length) q.set("ambientes", ambientesSelected.join(","));
+        if (minPrice) q.set("min", minPrice);
+        if (maxPrice) q.set("max", maxPrice);
+        if (sortOrder !== "recent") q.set("orden", sortOrder);
+        if (currentPage > 1) q.set("pagina", String(currentPage));
+        return q.toString();
+    }, [searchQuery, opType, propType, loc, ambientesSelected, minPrice, maxPrice, sortOrder, currentPage]);
+
+    useUrlSincronizada(queryUrl);
 
     const handleAmbienteToggle = (amb: string) => {
         setAmbientesSelected((prev) =>

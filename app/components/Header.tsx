@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { label: "Inicio", href: "/" },
   { label: "Propiedades", href: "/propiedades" },
+  { label: "Mapa", href: "/mapa" },
   { label: "Sobre nosotros", href: "/sobre-nosotros" },
   { label: "Contacto", href: "/contacto" },
   { label: "Administración", href: "/administrador" },
@@ -33,8 +34,8 @@ export default function Header() {
   }, []);
 
   // URLs Limpias y Públicas
-  const logoClaro = "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/logo-letra-negra.png";
-  const logoOscuro = "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/1.png";
+  const logoClaro = "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/logo-letra-negra.png";
+  const logoOscuro = "https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/1.png";
 
   return (
     <>

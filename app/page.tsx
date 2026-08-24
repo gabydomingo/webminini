@@ -26,7 +26,9 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const { data } = await supabase
     .from("properties")
-    .select("*") 
+    // Antes era select("*"): traía descripción y las ~19 URLs de fotos de
+    // cada destacada, para mostrar una tarjeta que usa una sola foto.
+    .select("id, title, price, currency, operation_type, property_type, localidad, location, bedrooms, bathrooms, environments, images, status, created_at")
     .eq("is_featured", true)
     .neq("status", "oculto")
     .order("created_at", { ascending: false })
@@ -43,7 +45,7 @@ export default async function HomePage() {
         <section className="relative min-h-[88vh] flex flex-col">
           <div className="absolute inset-0">
             <Image
-              src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
+              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
               alt="Inmobiliaria Minini - Venta y Alquiler de Propiedades"
               fill
               priority
