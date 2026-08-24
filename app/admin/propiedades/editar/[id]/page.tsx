@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '../../../../lib/supabase'
 import { comprimirImagen, type ImagenComprimida } from '../../../../lib/imageCompress'
 import { subirComprimida } from '../../../../lib/storage'
+import { avisarCambio } from '../../../../lib/revalidar'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
@@ -191,6 +192,11 @@ export default function EditarPropiedad() {
             }).eq('id', propertyId)
 
             if (dbError) throw dbError
+
+            // La web pública sirve desde caché: le avisamos que esta
+            // propiedad cambió para que la regenere ya.
+            await avisarCambio(propertyId)
+
             router.push('/admin/propiedades')
             router.refresh()
 

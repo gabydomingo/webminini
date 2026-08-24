@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { comprimirImagen, formatearPeso, type ImagenComprimida } from '../../../lib/imageCompress'
 import { subirComprimida } from '../../../lib/storage'
+import { avisarCambio } from '../../../lib/revalidar'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
@@ -155,6 +156,10 @@ export default function NuevaPropiedad() {
             }])
 
             if (dbError) throw dbError
+
+            // Que aparezca en la web sin esperar a que venza el caché
+            await avisarCambio()
+
             router.push('/admin/propiedades')
             router.refresh()
         } catch (err: any) {

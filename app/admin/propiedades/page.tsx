@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { avisarCambio } from '../../lib/revalidar'
 import Link from 'next/link'
 
 // ─── Tipo de dato ─────────────────────────────────────────────────────────────
@@ -61,6 +62,9 @@ export default function AdminPropertiesList() {
         if (error) {
             alert('Error al actualizar el estado')
             fetchProperties()
+        } else {
+            // Que la web pública se entere ya, sin esperar a que venza el caché
+            avisarCambio(id)
         }
     }
 
@@ -90,6 +94,9 @@ export default function AdminPropertiesList() {
         if (error) {
             alert('Error al destacar la propiedad')
             fetchProperties() // Revertimos si falla
+        } else {
+            // La portada muestra las destacadas: hay que regenerarla
+            avisarCambio(id)
         }
     }
 
@@ -107,6 +114,7 @@ export default function AdminPropertiesList() {
                 console.error(error)
             } else {
                 setProperties(properties.filter(p => p.id !== id))
+                avisarCambio(id)
             }
         }
     }
