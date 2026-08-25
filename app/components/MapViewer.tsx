@@ -4,15 +4,8 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { marcadorMinini } from '../lib/marcadorMapa';
 
-// Solución al bug de Next.js con los íconos de Leaflet
-const icon = L.icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-});
 
 export default function MapViewer({ lat, lng }: { lat: number; lng: number }) {
     const [isMounted, setIsMounted] = useState(false);
@@ -67,7 +60,7 @@ export default function MapViewer({ lat, lng }: { lat: number; lng: number }) {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     detectRetina={true}
                 />
-                <Marker position={position} icon={icon} interactive={false} />
+                <Marker position={position} icon={marcadorMinini} interactive={false} />
             </MapContainer>
         </div>
     );

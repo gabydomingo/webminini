@@ -3,17 +3,12 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { marcadorMinini } from "../lib/marcadorMapa";
 import { useEffect, useState } from "react";
 
-// Arreglo de los iconos (forzamos la creación en el cliente)
-const createIcon = () => L.icon({
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-});
+// El pin ahora es un SVG local (app/lib/marcadorMapa.ts): ya no hace
+// falta crearlo en el cliente ni pedirlo a un CDN.
+const createIcon = () => marcadorMinini;
 
 const sedes = [
     {
@@ -33,7 +28,7 @@ const sedes = [
 ];
 
 export default function ContactMap() {
-    const [markerIcon, setMarkerIcon] = useState<L.Icon | null>(null);
+    const [markerIcon, setMarkerIcon] = useState<L.DivIcon | null>(null);
 
     useEffect(() => {
         setMarkerIcon(createIcon());

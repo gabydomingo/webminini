@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://tudominio.com"), // ⚠️ CAMBIAR POR EL DOMINIO FINAL
+  metadataBase: new URL("https://propiedadesminini.com"),
   title: {
     default: "Inmobiliaria Minini | Propiedades en San Bernardo y La Costa",
     template: "%s | Minini Propiedades",
@@ -50,8 +50,8 @@ export default function RootLayout({
     "@type": "RealEstateAgent",
     "name": "Minini Propiedades y Administración de Consorcios",
     "image": "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/2.png", // Logo
-    "@id": "https://tudominio.com", // ⚠️ CAMBIAR POR DOMINIO FINAL
-    "url": "https://tudominio.com", // ⚠️ CAMBIAR POR DOMINIO FINAL
+    "@id": "https://propiedadesminini.com",
+    "url": "https://propiedadesminini.com",
     "telephone": "+5492257307064",
     "address": {
       "@type": "PostalAddress",

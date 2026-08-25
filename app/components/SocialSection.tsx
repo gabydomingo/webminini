@@ -62,13 +62,63 @@ function MP4Player({ url, isActive }: { url: string; isActive: boolean }) {
     );
 }
 
+// ============================================================
+//  Reproductor de TikTok — se carga recién al hacer clic
+// ============================================================
+//  Antes el iframe de tiktok.com se cargaba solo al abrir la portada.
+//  Eso traía dos problemas:
+//
+//  1. BLOQUEOS DE RED. Muchas redes institucionales (universidades,
+//     oficinas, wifis públicos) filtran tiktok.com. Con el iframe
+//     cargándose de entrada, algunos filtros bloquean la página
+//     ENTERA, no solo el video. De ahí venía que la web no abriera
+//     desde ciertas conexiones a pesar del HTTPS.
+//
+//  2. PESO. El embed de TikTok arrastra varios cientos de KB de
+//     scripts de terceros antes de que el visitante decida siquiera
+//     si quiere ver el video.
+//
+//  Ahora se muestra una portada liviana con un botón de play. El
+//  iframe recién aparece cuando alguien lo pide, y si TikTok está
+//  bloqueado queda un link para abrirlo en la app.
+// ============================================================
 function TikTokPlayer({ url, isActive }: { url: string; isActive: boolean }) {
     const videoId = getTikTokId(url);
+    const [reproducir, setReproducir] = useState(false);
 
-    if (!isActive || !videoId) {
+    // Al salir de pantalla descargamos el iframe: libera memoria y evita
+    // que sigan corriendo scripts de un video que ya nadie está mirando.
+    useEffect(() => {
+        if (!isActive) setReproducir(false);
+    }, [isActive]);
+
+    if (!videoId) {
+        return <div className="w-full h-full bg-[#111]" />;
+    }
+
+    if (!reproducir) {
         return (
-            <div className="w-full h-full flex items-center justify-center bg-[#111]">
-                <div className="w-8 h-8 border-4 border-neutral-700 border-t-primary rounded-full animate-spin"></div>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-[#1a1a1a] to-[#000] pointer-events-auto px-4">
+                <button
+                    onClick={() => setReproducir(true)}
+                    aria-label="Reproducir video de TikTok"
+                    className="w-16 h-16 rounded-full bg-primary hover:bg-primary-hover transition-all hover:scale-110 flex items-center justify-center shadow-lg"
+                >
+                    <svg className="w-7 h-7 fill-white ml-1" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                </button>
+                <p className="text-white/70 text-xs text-center font-sans leading-tight">
+                    Tocá para ver el video
+                </p>
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/40 hover:text-white/70 text-[10px] underline underline-offset-2 font-sans transition-colors"
+                >
+                    Abrir en TikTok
+                </a>
             </div>
         );
     }
@@ -78,7 +128,8 @@ function TikTokPlayer({ url, isActive }: { url: string; isActive: boolean }) {
             src={`https://www.tiktok.com/embed/v2/${videoId}?lang=es-ES`}
             className="w-[102%] h-[102%] border-none pointer-events-auto bg-black"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture; web-share"
-            title="TikTok Video"
+            title="Video de TikTok de Minini Propiedades"
+            loading="lazy"
             scrolling="no"
             style={{ overflow: 'hidden' }}
         />

@@ -19,8 +19,21 @@ export const metadata: Metadata = {
     title: "Inmobiliaria Minini | San Bernardo y Mar de Ajó",
     description:
       "Encontrá casas, departamentos, dúplex y lotes en el Partido de la Costa con Inmobiliaria Minini.",
-    url: "https://tudominio.com",
+    url: "https://propiedadesminini.com",
+    type: "website",
+    locale: "es_AR",
+    // La imagen que se ve en la vista previa de WhatsApp, Facebook y X.
+    // Sin esto se comparte un link pelado, sin foto.
+    // Usa el hero, que ya está en el bucket. Si algún día querés una
+    // placa hecha a medida, lo ideal es 1200×630 px.
+    images: [
+      {
+        url: "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png",
+        alt: "Inmobiliaria Minini — Propiedades en el Partido de la Costa",
+      },
+    ],
   },
+  alternates: { canonical: "/" },
 };
 
 export default async function HomePage() {
@@ -45,7 +58,7 @@ export default async function HomePage() {
         <section className="relative min-h-[88vh] flex flex-col">
           <div className="absolute inset-0">
             <Image
-              src="https://cvgnpyzgglrclzxxlbsp.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
+              src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
               alt="Inmobiliaria Minini - Venta y Alquiler de Propiedades"
               fill
               priority
