@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { supabase } from "./lib/supabase";
+import { slugPropiedad } from "./lib/slug";
 
 // ============================================================
 //  sitemap.xml
@@ -32,16 +33,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Una entrada por propiedad publicada
     let propiedades: MetadataRoute.Sitemap = [];
     try {
+        // Se piden también tipo, operación y localidad porque con eso se
+        // arma el slug de la URL. Si acá se mandara el UUID pelado, Google
+        // indexaría la versión vieja y después comería un redirect en cada
+        // rastreo.
         const { data, error } = await supabase
             .from("properties")
-            .select("id, created_at, status")
+            .select("id, title, property_type, operation_type, localidad, created_at, status")
             .in("status", ["disponible", "reservado"])
             .order("created_at", { ascending: false });
 
         if (error) throw error;
 
         propiedades = (data || []).map((p) => ({
-            url: `${SITIO}/propiedades/${p.id}`,
+            url: `${SITIO}/propiedades/${slugPropiedad(p)}`,
             lastModified: p.created_at ? new Date(p.created_at) : undefined,
             changeFrequency: "weekly" as const,
             priority: 0.7,

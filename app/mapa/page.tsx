@@ -4,9 +4,10 @@ import MapaCliente from "./MapaCliente";
 import type { Metadata } from "next";
 import type { PropiedadEnMapa } from "../components/MapaPropiedades";
 
-// Se revalida cada 5 minutos: el mapa no necesita estar al segundo y así
-// no consultamos la base en cada visita.
-export const revalidate = 300;
+// Red de seguridad diaria. El refresco real lo dispara el panel a través de
+// /api/revalidar cuando se toca una propiedad, así que los 5 minutos de
+// antes solo servían para consultar Supabase de más.
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
     title: "Mapa de Propiedades | Minini",

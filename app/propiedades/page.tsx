@@ -4,7 +4,11 @@ import Header from "../components/Header";
 import PropiedadesContent from "./PropiedadesContent";
 import type { Metadata } from "next";
 
-export const revalidate = 120;
+// Igual que la portada: el refresco real lo dispara el panel a través de
+// /api/revalidar. Esto es solo la red de seguridad diaria. Con los 120
+// segundos de antes, el listado se regeneraba ~700 veces por día para
+// devolver lo mismo, y cada regeneración era una consulta a Supabase.
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
     title: "Propiedades en Venta y Alquiler | Minini",

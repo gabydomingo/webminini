@@ -4,6 +4,20 @@ Todo lo que hay que saber para que esto siga andando gratis. Reemplaza los nueve
 
 ---
 
+## Lo que cambió en la última pasada
+
+**Las fichas de propiedad ya no consultan Supabase en cada visita.** Eran el mayor consumo del proyecto: `/propiedades/[id]` no traía nada del servidor, montaba un componente de cliente que hacía `select('*')` en un `useEffect`. Dos consultas en vivo por visita, sin caché, y —peor— una página vacía para Google: las ~100 URLs del sitemap devolvían un spinner. Ahora los datos se leen en el servidor y las fichas se prerenderizan en el build. Lo mismo `/concretadas`.
+
+**El `revalidate` pasó de 120 segundos a 24 horas.** El aviso del panel a `/api/revalidar` ya actualizaba todo en el acto, así que los 2 minutos solo servían para regenerar páginas ~700 veces por día y devolver el mismo HTML. Las 24 horas son la red de seguridad por si ese aviso alguna vez no llega.
+
+**Las URLs de propiedad tienen slug.** `/propiedades/triplex-en-venta-mar-de-ajo-<uuid>`. El UUID va al final a propósito: no hubo que guardar nada nuevo en la base. Las URLs viejas con UUID pelado siguen funcionando y redirigen con un 308.
+
+**`page_views` e `inquiries` ya no se escriben desde el navegador.** Iban con la clave anónima, que está a la vista en el bundle de cualquier visitante: con eso se podía llenar la tabla de basura. Ahora pasan por `/api/visita` y `/api/consulta`, que escriben con la service_role desde el servidor y filtran bots. Falta correr `backup/sql/04-blindaje-escrituras.sql` para cerrar el permiso viejo.
+
+**El visor de fotos se rehizo.** Zonas táctiles grandes, deslizar para pasar, teclado, y miniaturas para saltar de una.
+
+---
+
 ## ¿Está listo para no gastar recursos?
 
 **Vercel: sí, verificado.** Revisé los `<Image>` del código uno por uno sobre el disco real:
@@ -47,7 +61,9 @@ npm i sharp
 npm run optimizar:hero -- --subir
 ```
 
-Convierte `heroprueba.png` de 1.9 MB a WebP de ~150 KB y lo sube. Después te dice la única línea que hay que cambiar en `app/page.tsx` (`.png` → `.webp`).
+Convierte `heroprueba.png` de 1.9 MB a WebP de ~150 KB y lo sube.
+
+⚠️ **Esto va antes del próximo deploy.** `app/page.tsx` ya apunta a `heroprueba.webp` (la constante `HERO`, que se usa tanto para el hero como para la vista previa de WhatsApp). Si el archivo todavía no está en el bucket, la portada sale sin fondo.
 
 Con eso una visita típica pasa de 4 MB a **~2.2 MB**, y el cupo mensual salta de ~1.250 a **~2.300 visitas**. El PNG original queda en el bucket por si querés volver atrás.
 
@@ -109,15 +125,17 @@ DELETE FROM public.page_views WHERE created_at < now() - interval '180 days';
 
 ## Pendientes menores
 
-1. **`metadataBase` sigue en `https://tudominio.com`** (`app/layout.tsx`, y también en `@id` y `url` del JSON-LD). Eso es lo que usan Google y las vistas previas de WhatsApp. Debería decir `https://propiedadesminini.com`.
+1. **Correr `backup/sql/04-blindaje-escrituras.sql`** en el SQL Editor, *después* de desplegar. Cierra el permiso de escritura anónima sobre `page_views` e `inquiries`, que ya no usa nadie. Al revés —SQL primero, deploy después— los formularios quedan rotos unos minutos.
 
-2. **Tres teléfonos distintos** conviven en el sitio: el del cartel de mantenimiento (`2257 65-3292`), el del WhatsApp flotante (`2257 30-9051`) y el del JSON-LD para Google (`2257 30-7064`). Si alguno está mal, hay que unificarlo.
+2. **Borrar `app/propiedades/[id]/PropertyDetailClient.tsx`.** Quedó vacío: su contenido se repartió entre `page.tsx`, `Galeria.tsx`, `FormularioConsulta.tsx` y `UbicacionMapa.tsx`.
 
-3. **Rotar las claves del proyecto nuevo.** La `service_role` y el JWT secret circularon por el chat. Settings → API → Rotate. La `anon` puede quedar, es pública por diseño.
+3. **Tres teléfonos distintos** conviven en el sitio: el del cartel de mantenimiento (`2257 65-3292`), el del WhatsApp flotante (`2257 30-9051`) y el del JSON-LD para Google (`2257 30-7064`). Si alguno está mal, hay que unificarlo.
 
-4. **El proyecto viejo (`cvgnpyzgglrclzxxlbsp`).** Ya no lo usa nadie. Cuando estés seguro de que no falta nada: borrale el bucket, verificá que la organización esté en plan Free y que no quede ninguna suscripción activa.
+4. **Rotar las claves del proyecto nuevo.** La `service_role` y el JWT secret circularon por el chat. Settings → API → Rotate. La `anon` puede quedar, es pública por diseño.
 
-5. **El cartel de mantenimiento** sigue prendido. Se apaga con `NEXT_PUBLIC_MANTENIMIENTO=0` en Vercel + redeploy.
+5. **El proyecto viejo (`cvgnpyzgglrclzxxlbsp`).** Ya no lo usa nadie. Cuando estés seguro de que no falta nada: borrale el bucket, verificá que la organización esté en plan Free y que no quede ninguna suscripción activa.
+
+6. **El cartel de mantenimiento** sigue prendido. Se apaga con `NEXT_PUBLIC_MANTENIMIENTO=0` en Vercel + redeploy.
 
 ---
 

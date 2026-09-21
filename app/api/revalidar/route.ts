@@ -53,28 +53,38 @@ export async function POST(request: Request) {
     }
 
     // ── 2. Regenerar lo que corresponda ─────────────────────
-    let propiedadId: string | undefined;
+    // El cuerpo ya no se usa para nada, pero se sigue leyendo para no
+    // romper llamadas viejas que mandan { id }.
     try {
-        const body = await request.json();
-        propiedadId = body?.id;
+        await request.json();
     } catch {
-        // Sin cuerpo: regeneramos igual las páginas de listado.
+        /* sin cuerpo también vale */
     }
 
     const regeneradas: string[] = [];
 
-    // La portada (destacadas), el listado y el mapa se ven afectados por
-    // cualquier cambio: alta, baja, precio, estado o destacado.
-    for (const ruta of ["/", "/propiedades", "/mapa", "/concretadas"]) {
+    // La portada (destacadas), el listado, el mapa y las concretadas se ven
+    // afectados por cualquier cambio: alta, baja, precio, estado o destacado.
+    // El sitemap también: una propiedad nueva tiene que aparecerle a Google
+    // sin esperar a que se venza solo.
+    for (const ruta of ["/", "/propiedades", "/mapa", "/concretadas", "/sitemap.xml"]) {
         revalidatePath(ruta);
         regeneradas.push(ruta);
     }
 
-    // Y el detalle de la propiedad tocada, si vino el id.
-    if (propiedadId) {
-        revalidatePath(`/propiedades/${propiedadId}`);
-        regeneradas.push(`/propiedades/${propiedadId}`);
-    }
+    // Y las fichas.
+    //
+    // Antes acá iba `revalidatePath('/propiedades/' + id)`. Con las URLs
+    // nuevas eso ya no sirve: la ruta canónica es
+    // /propiedades/<tipo>-en-<operacion>-<localidad>-<uuid>, y si cambió la
+    // localidad o el tipo, la ruta vieja y la nueva son distintas — se
+    // regeneraría una página que ya nadie visita.
+    //
+    // Pasándole el segmento dinámico, Next invalida TODAS las fichas de una.
+    // Son estáticas y livianas: regenerarlas sale mucho más barato que
+    // tener una desactualizada.
+    revalidatePath("/propiedades/[id]", "page");
+    regeneradas.push("/propiedades/[id]");
 
     return NextResponse.json({ ok: true, regeneradas });
 }

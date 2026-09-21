@@ -26,6 +26,7 @@ import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-le
 import type { Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { urlMiniatura } from "../lib/imagenes";
+import { rutaPropiedad } from "../lib/slug";
 
 /**
  * El mapa solo necesita estas columnas, no la Property entera.
@@ -220,7 +221,9 @@ export default function MapaPropiedades({ propiedades }: { propiedades: Propieda
                             fillOpacity: 0.95,
                         }}
                         eventHandlers={{
-                            click: () => window.open(`/propiedades/${p.id}`, "_blank", "noopener,noreferrer"),
+                            // Con la URL canónica: si se abriera con el UUID pelado
+                            // el visitante se comería un redirect antes de ver nada.
+                            click: () => window.open(rutaPropiedad(p), "_blank", "noopener,noreferrer"),
                             mouseover: (e) => e.target.setRadius(10),
                             mouseout: (e) => e.target.setRadius(7),
                         }}

@@ -87,6 +87,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Todas las fotos del sitio viven en Supabase. Avisándole al navegador
+            antes de tiempo, el saludo TCP + TLS con ese dominio (unos 150-250 ms
+            en un celular con datos) arranca mientras todavía se está leyendo el
+            HTML, en vez de recién cuando aparece la primera <img>. */}
+        <link rel="preconnect" href="https://syqfekxxiztmlqydtgec.supabase.co" />
+        <link rel="dns-prefetch" href="https://syqfekxxiztmlqydtgec.supabase.co" />
+
         {/* Inyectamos el JSON-LD en el head invisiblemente */}
         <script
           type="application/ld+json"

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "../components/Header";
-import { supabase } from "../lib/supabase";
 import dynamic from "next/dynamic";
 
 const ContactMap = dynamic(() => import("../components/ContactMap"), {
@@ -37,19 +36,39 @@ export default function ContactoContent() {
     const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+    // El reloj se lee en un efecto y no durante el render: Date.now() devuelve
+    // algo distinto cada vez, y React exige que el render sea reproducible.
+    const montadoEn = useRef(0);
+    const trampaRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        montadoEn.current = Date.now();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setStatus("idle");
         try {
-            const { error } = await supabase.from("inquiries").insert([{
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-                message: formData.message,
-                property_id: null
-            }]);
-            if (error) throw error;
+            // Antes esto insertaba directo en `inquiries` con la clave anónima,
+            // que viaja en el bundle de todos los visitantes. Ahora escribe el
+            // servidor, que además filtra bots. Ver app/api/consulta/route.ts.
+            const res = await fetch("/api/consulta", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    message: formData.message,
+                    property_id: null,
+                    empresa: trampaRef.current?.value ?? "",
+                    // Valor holgado si no se registró el montaje: mejor dejar
+                    // pasar una consulta de más que perder una real.
+                    demora: montadoEn.current ? Date.now() - montadoEn.current : 60_000,
+                }),
+            });
+            if (!res.ok) throw new Error(`respuesta ${res.status}`);
             setStatus("success");
             setFormData({ name: "", email: "", phone: "", message: "" });
             setTimeout(() => setStatus("idle"), 5000);
@@ -124,16 +143,42 @@ export default function ContactoContent() {
                         <div className="bg-card border border-border-card p-8 md:p-10 rounded-2xl shadow-sm">
                             <h3 className="text-2xl font-bold text-foreground font-serif mb-8">Envianos tu consulta</h3>
 
-                            {status === "success" && (
-                                <div className="mb-6 p-4 bg-green-500/10 text-green-600 border border-green-500/20 rounded-lg text-sm font-sans">
-                                    ¡Mensaje enviado con éxito! Nos comunicaremos pronto.
-                                </div>
-                            )}
+                            {/* aria-live: sin esto el resultado aparece en pantalla pero
+                                un lector de pantalla no lo anuncia nunca. */}
+                            <div aria-live="polite">
+                                {status === "success" && (
+                                    <div className="mb-6 p-4 bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20 rounded-lg text-sm font-sans">
+                                        ¡Mensaje enviado con éxito! Nos comunicaremos pronto.
+                                    </div>
+                                )}
+                                {/* Este cartel faltaba: si el envío fallaba, el botón dejaba de
+                                    girar y no pasaba nada más. El visitante se quedaba sin saber
+                                    si la consulta había llegado. */}
+                                {status === "error" && (
+                                    <div className="mb-6 p-4 bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20 rounded-lg text-sm font-sans">
+                                        No pudimos enviar tu mensaje. Probá de nuevo, o escribinos
+                                        directo por WhatsApp a los teléfonos de acá arriba.
+                                    </div>
+                                )}
+                            </div>
 
                             <form onSubmit={handleSubmit} className="space-y-5 font-sans">
+                                {/* Trampa para bots: invisible para una persona, irresistible
+                                    para un script que completa todos los campos. */}
+                                <input
+                                    ref={trampaRef}
+                                    type="text"
+                                    name="empresa"
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                    aria-hidden="true"
+                                    className="absolute w-px h-px -left-[9999px] overflow-hidden"
+                                />
+
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Nombre Completo</label>
+                                    <label htmlFor="contacto-nombre" className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 mb-2 block ml-1">Nombre Completo</label>
                                     <input
+                                        id="contacto-nombre" name="name" autoComplete="name"
                                         type="text" required
                                         value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all"
@@ -142,16 +187,18 @@ export default function ContactoContent() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Teléfono</label>
+                                        <label htmlFor="contacto-telefono" className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 mb-2 block ml-1">Teléfono</label>
                                         <input
+                                            id="contacto-telefono" name="phone" autoComplete="tel"
                                             type="tel" required
                                             value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                             className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Email</label>
+                                        <label htmlFor="contacto-email" className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 mb-2 block ml-1">Email</label>
                                         <input
+                                            id="contacto-email" name="email" autoComplete="email"
                                             type="email" required
                                             value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all"
@@ -160,8 +207,9 @@ export default function ContactoContent() {
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mb-2 block ml-1">Mensaje</label>
+                                    <label htmlFor="contacto-mensaje" className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 mb-2 block ml-1">Mensaje</label>
                                     <textarea
+                                        id="contacto-mensaje" name="message"
                                         rows={5} required
                                         value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                         className="w-full bg-input border border-border-input rounded-xl px-4 py-4 text-foreground focus:border-primary outline-none transition-all resize-none"

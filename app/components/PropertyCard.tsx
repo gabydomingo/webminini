@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FotoPropiedad from "./FotoPropiedad";
+import { rutaPropiedad } from "../lib/slug";
 
 /**
  * La tarjeta usa estas 12 columnas y ninguna más.
@@ -59,8 +60,10 @@ export default function PropertyCard({ property }: { property: PropiedadTarjeta 
     // 🚀 SEO: Generamos un alt-text útil para Google ("Departamento en San Bernardo")
     const seoAltText = `${property.property_type} en ${property.operation_type} - ${property.localidad}`;
 
+    // La URL canónica lleva el slug: /propiedades/duplex-en-venta-san-bernardo-<uuid>.
+    // El UUID pelado sigue funcionando, pero redirige — mejor no generarlo.
     return (
-        <Link href={`/propiedades/${property.id}`} className="group block h-full">
+        <Link href={rutaPropiedad(property)} className="group block h-full">
             <div className="bg-card border border-border-card rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
 
                 <div className="relative h-52 overflow-hidden shrink-0 bg-input">

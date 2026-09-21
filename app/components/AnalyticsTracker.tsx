@@ -1,44 +1,64 @@
 "use client";
 
+// ============================================================
+//  Registro de visitas
+// ============================================================
+//  Cambió una sola cosa respecto de antes, pero importa: ya no escribe
+//  directo en Supabase con la clave anónima —que cualquiera puede sacar
+//  del bundle y usar para llenar la tabla— sino que avisa a /api/visita,
+//  y el registro lo hace el servidor. De paso, allá se filtran los robots,
+//  que antes contaban como visitas reales.
+//
+//  Sigue registrando una sola vez por sesión, no por página.
+// ============================================================
+
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { supabase } from "../lib/supabase";
+
+const CLAVE_MARCA = "minini_tracked";
+const CLAVE_SESION = "minini_session_id";
 
 export default function AnalyticsTracker() {
     const pathname = usePathname();
 
     useEffect(() => {
-        if (pathname.startsWith("/admin")) return;
+        if (!pathname || pathname.startsWith("/admin")) return;
 
-        const alreadyTracked = sessionStorage.getItem("minini_tracked");
-        if (alreadyTracked) return;
-
-        const recordVisit = async () => {
-            let sessionId = sessionStorage.getItem("minini_session_id");
+        // sessionStorage puede no estar (modo privado de algunos navegadores,
+        // cookies bloqueadas). Si falla, no registramos y listo.
+        let sessionId: string;
+        try {
+            if (sessionStorage.getItem(CLAVE_MARCA)) return;
+            sessionId = sessionStorage.getItem(CLAVE_SESION) ?? "";
             if (!sessionId) {
-                sessionId = `sess_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
-                sessionStorage.setItem("minini_session_id", sessionId);
+                sessionId = `sess_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
+                sessionStorage.setItem(CLAVE_SESION, sessionId);
             }
+            // Se marca antes de mandar: si el pedido falla, preferimos perder
+            // una visita antes que reintentar en cada navegación.
+            sessionStorage.setItem(CLAVE_MARCA, "1");
+        } catch {
+            return;
+        }
 
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        const esCelular =
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
                 navigator.userAgent
             );
 
-            try {
-                await supabase.from("page_views").insert([
-                    {
-                        path: pathname,
-                        device: isMobile ? "mobile" : "desktop",
-                        session_id: sessionId,
-                    },
-                ]);
-                sessionStorage.setItem("minini_tracked", "1");
-            } catch (error) {
-                console.error("Error registrando visita:", error);
-            }
-        };
-
-        recordVisit();
+        fetch("/api/visita", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                path: pathname,
+                device: esCelular ? "mobile" : "desktop",
+                session_id: sessionId,
+            }),
+            // Para que el pedido sobreviva si se van de la página enseguida.
+            keepalive: true,
+        }).catch(() => {
+            /* una métrica perdida no le arruina la visita a nadie */
+        });
     }, [pathname]);
 
     return null;

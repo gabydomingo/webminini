@@ -7,7 +7,24 @@ import SocialSection from "./components/SocialSection";
 import PropertyCard from "./components/PropertyCard";
 import type { Metadata } from "next";
 
-export const revalidate = 120;
+// Red de seguridad, no el mecanismo principal.
+//
+// Antes eran 120 segundos. Eso significaba que, con tráfico, cada 2 minutos
+// la primera visita disparaba una regeneración: una consulta a Supabase más
+// una invocación de función en Vercel, unas 700 veces por día y por página,
+// para servir exactamente el mismo HTML.
+//
+// No hace falta: el panel ya avisa a /api/revalidar apenas se guarda un
+// cambio, así que la portada se actualiza en el acto. Este número queda solo
+// por si alguna vez ese aviso no llegara.
+export const revalidate = 86400;
+
+// La versión WebP del hero: 94 KB contra los 1,9 MB del PNG original.
+// El PNG era la mitad de todo el tráfico del bucket y el freno del LCP.
+// ⚠️ Antes de desplegar este cambio tiene que estar subido al bucket:
+//      npm i sharp && npm run optimizar:hero -- --subir
+const HERO =
+  "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.webp";
 
 // SEO: Optimizamos la meta descripción para Google
 export const metadata: Metadata = {
@@ -24,11 +41,14 @@ export const metadata: Metadata = {
     locale: "es_AR",
     // La imagen que se ve en la vista previa de WhatsApp, Facebook y X.
     // Sin esto se comparte un link pelado, sin foto.
-    // Usa el hero, que ya está en el bucket. Si algún día querés una
-    // placa hecha a medida, lo ideal es 1200×630 px.
+    //
+    // Ojo con el peso: WhatsApp descarta las vistas previas pesadas, así que
+    // con el PNG de 1,9 MB el link salía sin foto la mitad de las veces.
+    // Con el WebP de 94 KB sale siempre. Si algún día querés una placa hecha
+    // a medida, lo ideal es 1200×630 px.
     images: [
       {
-        url: "https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png",
+        url: HERO,
         alt: "Inmobiliaria Minini — Propiedades en el Partido de la Costa",
       },
     ],
@@ -58,10 +78,11 @@ export default async function HomePage() {
         <section className="relative min-h-[88vh] flex flex-col">
           <div className="absolute inset-0">
             <Image
-              src="https://syqfekxxiztmlqydtgec.supabase.co/storage/v1/object/public/FotosPagina/heroprueba.png"
+              src={HERO}
               alt="Inmobiliaria Minini - Venta y Alquiler de Propiedades"
               fill
               priority
+              fetchPriority="high"
               sizes="100vw"
               unoptimized
               className="object-cover"
