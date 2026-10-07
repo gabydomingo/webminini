@@ -6,6 +6,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import WhatsAppFloating from "./components/WhatsAppFloating";
 import BannerMantenimiento from "./components/BannerMantenimiento";
 import Footer from "./components/Footer";
+import GoogleTagManager from "./components/GoogleTagManager";
 
 const aleo = localFont({
   src: "./fonts/Aleo-Black.ttf",
@@ -94,6 +95,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://syqfekxxiztmlqydtgec.supabase.co" />
         <link rel="dns-prefetch" href="https://syqfekxxiztmlqydtgec.supabase.co" />
 
+        {/* Lo mismo para Tag Manager. El script arranca recién cuando la
+            página ya es usable, así que adelantar el saludo TCP + TLS con
+            Google le ahorra 100-200 ms cuando le toca cargar. */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
         {/* Inyectamos el JSON-LD en el head invisiblemente */}
         <script
           type="application/ld+json"
@@ -101,6 +108,11 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground transition-colors duration-300">
+        {/* Primer hijo de <body> a propósito: Google pide que el <noscript>
+            de Tag Manager quede justo después de la etiqueta de apertura.
+            El <script> lo ubica Next por su cuenta. */}
+        <GoogleTagManager />
+
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <BannerMantenimiento />
           <AnalyticsTracker />
