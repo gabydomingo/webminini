@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { avisarCambio } from '../../lib/revalidar'
 
 interface Option {
     id: number
@@ -13,6 +14,8 @@ export default function GestionOpciones() {
     const [options, setOptions] = useState<Option[]>([])
     const [loading, setLoading] = useState(true)
     const [newOption, setNewOption] = useState({ category: 'tipo_propiedad', value: '' })
+    const [guardando, setGuardando] = useState(false)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
     const fetchOptions = async () => {
         setLoading(true)
@@ -27,23 +30,55 @@ export default function GestionOpciones() {
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!newOption.value.trim()) return
+        setErrorMsg(null)
 
-        const { error } = await supabase.from('form_options').insert([
-            { category: newOption.category, value: newOption.value.trim() }
-        ])
+        const valor = newOption.value.trim()
+        if (!valor) return
 
-        if (!error) {
-            setNewOption({ ...newOption, value: '' })
-            fetchOptions()
-        } else {
-            alert('Error al guardar la opción')
+        // No repetir un valor que ya está en esa lista. La tabla no tiene
+        // una constraint UNIQUE, así que el duplicado entraría igual y
+        // después aparece dos veces en los filtros.
+        const yaExiste = options.some(
+            o => o.category === newOption.category &&
+                 o.value.trim().toLowerCase() === valor.toLowerCase()
+        )
+        if (yaExiste) {
+            setErrorMsg(`"${valor}" ya está en esa lista.`)
+            return
         }
+
+        setGuardando(true)
+        const { error } = await supabase.from('form_options').insert([
+            { category: newOption.category, value: valor }
+        ])
+        setGuardando(false)
+
+        if (error) {
+            // Antes acá decía solo "Error al guardar la opción" y el motivo
+            // real quedaba escondido en la consola del navegador.
+            console.error('[opciones] insert falló:', error)
+            setErrorMsg(`No se pudo guardar: ${error.message}`)
+            return
+        }
+
+        setNewOption({ ...newOption, value: '' })
+        await fetchOptions()
+        // Los filtros del buscador y del listado público se arman con esta
+        // tabla, y esas páginas están en caché. Sin este aviso, la opción
+        // nueva no aparece en la web hasta el día siguiente.
+        avisarCambio()
     }
 
     const handleDelete = async (id: number) => {
+        setErrorMsg(null)
         const { error } = await supabase.from('form_options').delete().eq('id', id)
-        if (!error) fetchOptions()
+        if (error) {
+            console.error('[opciones] delete falló:', error)
+            setErrorMsg(`No se pudo borrar: ${error.message}`)
+            return
+        }
+        await fetchOptions()
+        avisarCambio()
     }
 
     // Agrupamos las opciones para mostrarlas ordenadas
@@ -88,10 +123,23 @@ export default function GestionOpciones() {
                         className="w-full p-2.5 bg-input border border-border-input text-foreground rounded-lg focus:outline-none focus:border-[#8B1A1A] transition-colors"
                     />
                 </div>
-                <button type="submit" className="px-6 py-2.5 bg-[#8B1A1A] hover:bg-[#6e1414] text-white font-bold rounded-lg transition-colors w-full md:w-auto shadow-sm">
-                    Agregar a la lista
+                <button
+                    type="submit"
+                    disabled={guardando}
+                    className="px-6 py-2.5 bg-[#8B1A1A] hover:bg-[#6e1414] disabled:opacity-60 text-white font-bold rounded-lg transition-colors w-full md:w-auto shadow-sm"
+                >
+                    {guardando ? 'Guardando...' : 'Agregar a la lista'}
                 </button>
             </form>
+
+            {errorMsg && (
+                <div
+                    role="alert"
+                    className="mb-8 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                >
+                    {errorMsg}
+                </div>
+            )}
 
             {/* Grilla mostrando lo que ya existe */}
             {loading ? (

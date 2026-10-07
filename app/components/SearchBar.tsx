@@ -15,11 +15,23 @@ export default function SearchBar() {
     const [options, setOptions] = useState<Record<string, string[]>>({});
 
     useEffect(() => {
+        // El caché evita pedirle las listas a Supabase en cada navegación,
+        // pero sin vencimiento una pestaña abierta puede quedarse días con
+        // las opciones viejas. Seis horas es suficiente para ahorrar las
+        // consultas y que un tópico nuevo igual aparezca el mismo día.
+        const VENCE_MS = 6 * 60 * 60 * 1000;
         const cached = sessionStorage.getItem("minini_form_options");
         if (cached) {
             try {
-                setOptions(JSON.parse(cached));
-                return;
+                const guardado = JSON.parse(cached);
+                if (
+                    guardado &&
+                    typeof guardado.ts === "number" &&
+                    Date.now() - guardado.ts < VENCE_MS
+                ) {
+                    setOptions(guardado.datos);
+                    return;
+                }
             } catch {}
         }
 
@@ -42,7 +54,7 @@ export default function SearchBar() {
                 setOptions(grouped);
                 sessionStorage.setItem(
                     "minini_form_options",
-                    JSON.stringify(grouped)
+                    JSON.stringify({ ts: Date.now(), datos: grouped })
                 );
             }
         };
