@@ -24,7 +24,12 @@ export default async function PropiedadesPage() {
                 "id, title, description, localidad, location, property_type, operation_type, features, environments, bedrooms, bathrooms, price, currency, images, created_at, provincia, latitude, longitude, status"
             )
             .eq("status", "disponible")
-            .order("created_at", { ascending: false }),
+            // Desempate por id: sin un orden total, dos propiedades con el mismo
+            // created_at pueden alternarse entre regeneraciones. Eso cambia el HTML
+            // sin que haya cambiado ningun dato, y Vercel cobra la escritura ISR
+            // entera (solo se saltea la escritura si la pagina sale identica).
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: true }),
         supabase.from("form_options").select("*"),
     ]);
 

@@ -41,7 +41,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             .from("properties")
             .select("id, title, property_type, operation_type, localidad, created_at, status")
             .in("status", ["disponible", "reservado"])
-            .order("created_at", { ascending: false });
+            // Desempate por id: sin un orden total, dos propiedades con el mismo
+            // created_at pueden alternarse entre regeneraciones. Eso cambia el HTML
+            // sin que haya cambiado ningun dato, y Vercel cobra la escritura ISR
+            // entera (solo se saltea la escritura si la pagina sale identica).
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: true });
 
         if (error) throw error;
 

@@ -34,7 +34,12 @@ export default async function Page() {
             "id, title, price, currency, operation_type, property_type, localidad, location, bedrooms, bathrooms, environments, images, status, created_at"
         )
         .in("status", ["vendido", "alquilado", "reservado"])
-        .order("created_at", { ascending: false });
+        // Desempate por id: sin un orden total, dos propiedades con el mismo
+        // created_at pueden alternarse entre regeneraciones. Eso cambia el HTML
+        // sin que haya cambiado ningun dato, y Vercel cobra la escritura ISR
+        // entera (solo se saltea la escritura si la pagina sale identica).
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true });
 
     // La tarjeta usa la primera foto y nada más: el resto del array serían
     // kilobytes de URLs viajando al navegador para no usarse.

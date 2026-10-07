@@ -65,6 +65,26 @@ const traerPropiedad = cache(async (id: string): Promise<Property | null> => {
     return (data as Property) ?? null;
 });
 
+/**
+ * Las 6 propiedades que se muestran abajo, en "Otras propiedades en...".
+ *
+ * Dos detalles que parecen menores y no lo son, los dos por el costo de ISR
+ * (Vercel cobra por bytes escritos en el caché, 8 KB por unidad):
+ *
+ * 1. EL ORDEN TIENE QUE SER DETERMINISTA. Antes esto era un `.limit(6)` sin
+ *    `.order()`. Postgres no garantiza el orden de las filas sin ORDER BY,
+ *    así que el bloque de similares podía salir ordenado distinto en cada
+ *    regeneración. Y Vercel solo se saltea la escritura cuando la página
+ *    sale IDÉNTICA a la anterior: con el orden bailando, cada ficha se
+ *    reescribía entera aunque no se hubiera tocado nada de ella. El segundo
+ *    criterio por `id` es el desempate, para que dos propiedades cargadas
+ *    en el mismo instante tampoco puedan alternarse.
+ *
+ * 2. SOLO LA PRIMERA FOTO. MiniPropertyCard dibuja una miniatura y nada
+ *    más, pero la consulta traía el array completo de las 6 propiedades.
+ *    Medido sobre el build anterior: 75 URLs de Supabase por ficha en el
+ *    HTML, la mayoría de este bloque.
+ */
 const traerSimilares = cache(async (localidad: string | null, id: string) => {
     if (!localidad) return [];
     const { data } = await supabase
@@ -73,8 +93,14 @@ const traerSimilares = cache(async (localidad: string | null, id: string) => {
         .eq("localidad", localidad)
         .eq("status", "disponible")
         .neq("id", id)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true })
         .limit(6);
-    return data ?? [];
+
+    return (data ?? []).map((p) => ({
+        ...p,
+        images: Array.isArray(p.images) && p.images.length ? [p.images[0]] : [],
+    }));
 });
 
 // ─── Generación estática ──────────────────────────────────────────────────────

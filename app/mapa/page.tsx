@@ -26,10 +26,27 @@ export default async function MapaPage() {
         .in("status", ["disponible", "reservado", "vendido"])
         .not("latitude", "is", null)
         .not("longitude", "is", null)
-        .order("created_at", { ascending: false });
+        // Desempate por id: sin un orden total, dos propiedades con el mismo
+        // created_at pueden alternarse entre regeneraciones. Eso cambia el HTML
+        // sin que haya cambiado ningun dato, y Vercel cobra la escritura ISR
+        // entera (solo se saltea la escritura si la pagina sale identica).
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true });
 
-    // El tipo lo define el propio componente: pedimos exactamente lo que usa.
-    const propiedades: PropiedadEnMapa[] = data || [];
+    // El mapa dibuja UNA sola miniatura por punto (la del hover), pero la
+    // consulta devuelve el array entero de fotos de cada propiedad. Medido
+    // sobre el build anterior: 2.939 URLs de Supabase dentro del HTML de
+    // esta página para usar 150. Eran ~350 KB que viajaban al visitante
+    // para nada, y que además se escriben en el caché ISR cada vez que la
+    // página se regenera (Vercel cobra por bytes escritos, 8 KB por unidad).
+    //
+    // Es el mismo recorte que ya hacía /propiedades; acá se había quedado
+    // sin hacer. Si algún día el mapa muestra más de una foto, alcanza con
+    // ampliar el slice.
+    const propiedades: PropiedadEnMapa[] = (data || []).map((p) => ({
+        ...p,
+        images: Array.isArray(p.images) && p.images.length ? [p.images[0]] : [],
+    }));
 
     return (
         <div className="bg-background min-h-screen transition-colors duration-300">
