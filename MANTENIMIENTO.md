@@ -6,6 +6,8 @@ Todo lo que hay que saber para que esto siga andando gratis. Reemplaza los nueve
 
 ## Lo que cambió en la última pasada
 
+**Regenerar solo lo que cambió (nov-2026).** Vercel avisó que la cuenta iba por el 75 % de los ISR Writes gratis, y el 89 % era esta web. La causa: cualquier cosa que se tocaba en el panel (un estado, una estrella, una opción) invalidaba las ~140 fichas juntas, y cada ficha son varias entradas de caché. Ahora `/api/revalidar` recibe qué cambió y regenera la ficha afectada y los listados. Una estrella solo toca la portada; una opción, solo `/propiedades`. El botón "Refrescar web" del panel sigue regenerando todo: usarlo solo si algo no se actualizó.
+
 **Las fichas de propiedad ya no consultan Supabase en cada visita.** Eran el mayor consumo del proyecto: `/propiedades/[id]` no traía nada del servidor, montaba un componente de cliente que hacía `select('*')` en un `useEffect`. Dos consultas en vivo por visita, sin caché, y —peor— una página vacía para Google: las ~100 URLs del sitemap devolvían un spinner. Ahora los datos se leen en el servidor y las fichas se prerenderizan en el build. Lo mismo `/concretadas`.
 
 **El `revalidate` pasó de 120 segundos a 24 horas.** El aviso del panel a `/api/revalidar` ya actualizaba todo en el acto, así que los 2 minutos solo servían para regenerar páginas ~700 veces por día y devolver el mismo HTML. Las 24 horas son la red de seguridad por si ese aviso alguna vez no llega.

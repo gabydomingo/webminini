@@ -158,7 +158,7 @@ export default function NuevaPropiedad() {
             if (dbError) throw dbError
 
             // Que aparezca en la web sin esperar a que venza el caché
-            await avisarCambio()
+            await avisarCambio({ alcance: 'listados' })
 
             router.push('/admin/propiedades')
             router.refresh()

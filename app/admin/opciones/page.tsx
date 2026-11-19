@@ -66,7 +66,7 @@ export default function GestionOpciones() {
         // Los filtros del buscador y del listado público se arman con esta
         // tabla, y esas páginas están en caché. Sin este aviso, la opción
         // nueva no aparece en la web hasta el día siguiente.
-        avisarCambio()
+        avisarCambio({ alcance: 'opciones' })
     }
 
     const handleDelete = async (id: number) => {
@@ -78,7 +78,7 @@ export default function GestionOpciones() {
             return
         }
         await fetchOptions()
-        avisarCambio()
+        avisarCambio({ alcance: 'opciones' })
     }
 
     // Agrupamos las opciones para mostrarlas ordenadas

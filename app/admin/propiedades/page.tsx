@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { avisarCambio } from '../../lib/revalidar'
+import { slugPropiedad } from '../../lib/slug'
 import Link from 'next/link'
 
 // ─── Tipo de dato ─────────────────────────────────────────────────────────────
@@ -13,6 +14,8 @@ interface Property {
     price: number | null
     currency: string
     operation_type: string
+    property_type?: string | null
+    localidad?: string | null
     status: string
     images: string[]
     is_featured?: boolean
@@ -39,7 +42,7 @@ export default function AdminPropertiesList() {
         setLoading(true)
         const { data, error } = await supabase
             .from('properties')
-            .select('id, title, location, price, currency, operation_type, status, images, is_featured')
+            .select('id, title, location, price, currency, operation_type, property_type, localidad, status, images, is_featured')
             .order('created_at', { ascending: false })
 
         if (error) {
@@ -48,6 +51,12 @@ export default function AdminPropertiesList() {
             setProperties(data || [])
         }
         setLoading(false)
+    }
+
+    // La URL pública de la ficha, para que el servidor regenere solo esa
+    const slugsDe = (id: string) => {
+        const p = properties.find(x => x.id === id)
+        return p ? [slugPropiedad(p)] : []
     }
 
     // ─── LÓGICA: Cambiar Estado en vivo ───
@@ -64,7 +73,7 @@ export default function AdminPropertiesList() {
             fetchProperties()
         } else {
             // Que la web pública se entere ya, sin esperar a que venza el caché
-            avisarCambio(id)
+            avisarCambio({ alcance: 'propiedad', id, slugs: slugsDe(id) })
         }
     }
 
@@ -95,8 +104,8 @@ export default function AdminPropertiesList() {
             alert('Error al destacar la propiedad')
             fetchProperties() // Revertimos si falla
         } else {
-            // La portada muestra las destacadas: hay que regenerarla
-            avisarCambio(id)
+            // Las destacadas solo se ven en la portada
+            avisarCambio({ alcance: 'destacada' })
         }
     }
 
@@ -113,8 +122,9 @@ export default function AdminPropertiesList() {
                 alert('Hubo un error al eliminar la propiedad.')
                 console.error(error)
             } else {
+                const slugs = slugsDe(id)
                 setProperties(properties.filter(p => p.id !== id))
-                avisarCambio(id)
+                avisarCambio({ alcance: 'propiedad', id, slugs })
             }
         }
     }

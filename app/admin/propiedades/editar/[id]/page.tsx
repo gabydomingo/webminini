@@ -6,6 +6,7 @@ import { supabase } from '../../../../lib/supabase'
 import { comprimirImagen, type ImagenComprimida } from '../../../../lib/imageCompress'
 import { subirComprimida } from '../../../../lib/storage'
 import { avisarCambio } from '../../../../lib/revalidar'
+import { slugPropiedad } from '../../../../lib/slug'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
@@ -27,6 +28,7 @@ export default function EditarPropiedad() {
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [slugOriginal, setSlugOriginal] = useState<string | null>(null)
 
     const [formData, setFormData] = useState({
         title: '', description: '', price: '', currency: 'USD',
@@ -61,6 +63,9 @@ export default function EditarPropiedad() {
                 const { data: propData, error: propError } = await supabase.from('properties').select('*').eq('id', propertyId).single()
                 if (propError) setError('No se pudo cargar la propiedad.')
                 else if (propData) {
+                    // La URL que tiene hoy. Si se cambia tipo, operación o
+                    // localidad, la vieja también hay que regenerarla.
+                    setSlugOriginal(slugPropiedad(propData))
                     let parsedFeatures = '';
                     if (Array.isArray(propData.features)) parsedFeatures = propData.features.join(', ');
                     else if (typeof propData.features === 'string') parsedFeatures = propData.features;
@@ -195,7 +200,11 @@ export default function EditarPropiedad() {
 
             // La web pública sirve desde caché: le avisamos que esta
             // propiedad cambió para que la regenere ya.
-            await avisarCambio(propertyId)
+            await avisarCambio({
+                alcance: 'propiedad',
+                id: String(propertyId),
+                slugs: slugOriginal ? [slugOriginal] : [],
+            })
 
             router.push('/admin/propiedades')
             router.refresh()

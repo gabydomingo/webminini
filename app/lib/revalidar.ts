@@ -14,10 +14,22 @@
 import { supabase } from "./supabase";
 
 /**
- * Regenera las páginas públicas afectadas por un cambio.
- * @param propiedadId opcional: además regenera el detalle de esa propiedad.
+ * Qué cambió. El servidor regenera solo lo que ese cambio afecta:
+ *  - propiedad: edición, cambio de estado o baja. `slugs` son las URLs que
+ *    tenía antes (sin "/propiedades/"), por si cambió tipo o localidad.
+ *  - listados: propiedad nueva.
+ *  - destacada: se puso o se sacó una estrella (solo la portada).
+ *  - opciones: se tocaron las opciones de los filtros.
+ *  - todo: el botón "Refrescar web". Regenera las ~140 fichas, usarlo poco.
  */
-export async function avisarCambio(propiedadId?: string): Promise<boolean> {
+export type Cambio =
+    | { alcance: "propiedad"; id: string; slugs?: string[] }
+    | { alcance: "listados" }
+    | { alcance: "destacada" }
+    | { alcance: "opciones" }
+    | { alcance: "todo" };
+
+export async function avisarCambio(cambio: Cambio): Promise<boolean> {
     try {
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
@@ -32,7 +44,7 @@ export async function avisarCambio(propiedadId?: string): Promise<boolean> {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ id: propiedadId }),
+            body: JSON.stringify(cambio),
         });
 
         if (!res.ok) {

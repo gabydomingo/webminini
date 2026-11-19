@@ -147,7 +147,7 @@ export default function AdminDashboard() {
   const refrescarWeb = async () => {
     setRefrescando(true)
     setAvisoRefresco(null)
-    const ok = await avisarCambio()
+    const ok = await avisarCambio({ alcance: 'todo' })
     setRefrescando(false)
     setAvisoRefresco(
       ok

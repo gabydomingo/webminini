@@ -4,7 +4,7 @@
 //  EL PROBLEMA QUE RESUELVE
 //
 //  Las páginas públicas se generan una vez y se guardan en caché
-//  (`export const revalidate = 120`). Eso está bien: hace que la web
+//  (`export const revalidate = 86400`). Eso está bien: hace que la web
 //  vuele y que casi no se consulte Supabase. Pero tiene una contra —
 //  cuando se corrige un precio o se destaca una propiedad, el panel lo
 //  muestra al instante (lee en vivo) y la web pública no, porque sigue
@@ -31,6 +31,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "../../lib/supabaseAdmin";
+import { idDesdeRuta, slugPropiedad } from "../../lib/slug";
 
 export async function POST(request: Request) {
     // ── 1. ¿Quién llama? ────────────────────────────────────
@@ -52,39 +53,106 @@ export async function POST(request: Request) {
         );
     }
 
-    // ── 2. Regenerar lo que corresponda ─────────────────────
-    // El cuerpo ya no se usa para nada, pero se sigue leyendo para no
-    // romper llamadas viejas que mandan { id }.
+    // ── 2. Regenerar solo lo que cambió ─────────────────────
+    let cuerpo: Cambio = { alcance: "todo" };
     try {
-        await request.json();
+        const leido = await request.json();
+        if (leido && typeof leido === "object") cuerpo = leido as Cambio;
     } catch {
-        /* sin cuerpo también vale */
+        /* sin cuerpo: se regenera todo, como antes */
     }
 
-    const regeneradas: string[] = [];
+    const rutas = new Set<string>();
 
-    // La portada (destacadas), el listado, el mapa y las concretadas se ven
-    // afectados por cualquier cambio: alta, baja, precio, estado o destacado.
-    // El sitemap también: una propiedad nueva tiene que aparecerle a Google
-    // sin esperar a que se venza solo.
-    for (const ruta of ["/", "/propiedades", "/mapa", "/concretadas", "/sitemap.xml"]) {
-        revalidatePath(ruta);
-        regeneradas.push(ruta);
+    switch (cuerpo.alcance) {
+        case "destacada":
+            // Las destacadas solo se ven en la portada.
+            rutas.add("/");
+            break;
+
+        case "opciones":
+            // Los filtros del listado salen de form_options. El buscador de
+            // la portada las lee en el navegador, no hace falta tocarla.
+            rutas.add("/propiedades");
+            break;
+
+        case "listados":
+            // Propiedad nueva: su ficha todavía no está en caché, se genera
+            // sola en la primera visita. Alcanza con los listados.
+            LISTADOS.forEach((r) => rutas.add(r));
+            break;
+
+        case "propiedad": {
+            LISTADOS.forEach((r) => rutas.add(r));
+            const id = typeof cuerpo.id === "string" ? idDesdeRuta(cuerpo.id) : null;
+            if (id) {
+                for (const ruta of await rutasDeFicha(id, cuerpo.slugs)) rutas.add(ruta);
+            }
+            break;
+        }
+
+        default:
+            // "todo": el botón "Refrescar web" del panel, o llamadas viejas.
+            // Es lo único que invalida las ~140 fichas de una, así que
+            // queda solo para cuando se pide a mano.
+            LISTADOS.forEach((r) => rutas.add(r));
+            revalidatePath("/propiedades/[id]", "page");
+            rutas.add("/propiedades/[id]");
     }
 
-    // Y las fichas.
-    //
-    // Antes acá iba `revalidatePath('/propiedades/' + id)`. Con las URLs
-    // nuevas eso ya no sirve: la ruta canónica es
-    // /propiedades/<tipo>-en-<operacion>-<localidad>-<uuid>, y si cambió la
-    // localidad o el tipo, la ruta vieja y la nueva son distintas — se
-    // regeneraría una página que ya nadie visita.
-    //
-    // Pasándole el segmento dinámico, Next invalida TODAS las fichas de una.
-    // Son estáticas y livianas: regenerarlas sale mucho más barato que
-    // tener una desactualizada.
-    revalidatePath("/propiedades/[id]", "page");
-    regeneradas.push("/propiedades/[id]");
+    for (const ruta of rutas) {
+        if (ruta !== "/propiedades/[id]") revalidatePath(ruta);
+    }
 
-    return NextResponse.json({ ok: true, regeneradas });
+    return NextResponse.json({ ok: true, regeneradas: [...rutas] });
+}
+
+// ── Qué se regenera ────────────────────────────────────────────
+//
+// Antes, cualquier cambio en el panel (un estado, una estrella, una
+// opción) invalidaba TODAS las fichas con "/propiedades/[id]". Cada ficha
+// ocupa varias entradas en el caché de Vercel (HTML + segmentos), así que
+// cada guardado terminaba en cientos de ISR Writes cuando Google o los
+// visitantes volvían a pasar. Era el 89 % del cupo gratuito de la cuenta.
+//
+// Ahora se invalida la ficha que cambió y los listados. El bloque
+// "Otras propiedades en..." de las demás fichas puede tardar hasta un día
+// en enterarse (el revalidate de 24 h), que para ese bloque está bien.
+
+type Cambio =
+    | { alcance: "propiedad"; id: string; slugs?: string[] }
+    | { alcance: "listados" }
+    | { alcance: "destacada" }
+    | { alcance: "opciones" }
+    | { alcance: "todo" };
+
+const LISTADOS = ["/", "/propiedades", "/mapa", "/concretadas", "/sitemap.xml"];
+
+/**
+ * Las URLs bajo las que puede estar cacheada una ficha: la canónica actual,
+ * la del UUID pelado (redirige) y las que mande el panel (la URL de antes de
+ * editar, si cambió tipo, operación o localidad). Las del panel solo se
+ * aceptan si terminan en el mismo UUID.
+ */
+async function rutasDeFicha(id: string, slugs: unknown): Promise<string[]> {
+    const rutas = new Set<string>([`/propiedades/${id}`]);
+
+    if (Array.isArray(slugs)) {
+        for (const s of slugs) {
+            if (typeof s === "string" && s.length < 300 && idDesdeRuta(s) === id) {
+                rutas.add(`/propiedades/${s}`);
+            }
+        }
+    }
+
+    // Una fila, cinco columnas: no mueve la aguja del egress de Supabase.
+    const { data } = await supabaseAdmin
+        .from("properties")
+        .select("id, title, property_type, operation_type, localidad")
+        .eq("id", id)
+        .maybeSingle();
+
+    if (data) rutas.add(`/propiedades/${slugPropiedad(data)}`);
+
+    return [...rutas];
 }
